@@ -253,7 +253,7 @@ outCovComb4_HapOrder<-outCovComb4[match(rownames(biphasichapccMat),rownames(outC
 source("calcCCmatrixBiphasic.R")
 outCovComb4_Hapconden<-condenseHapCCmat(outCovComb4_HapOrder,hapOnePointer,dipTwoPointers)
 
-save(outCovComb4_HapOrder,outCovComb4_Hapconden,file="outCovComb4_and_Conden_0116_2021.Rdata")
+save(outCovComb4_HapOrder,outCovComb4_Hapconden,file="outCovComb4_hap_Conden_0116_2021.Rdata")
 
 
 ###{{}}
