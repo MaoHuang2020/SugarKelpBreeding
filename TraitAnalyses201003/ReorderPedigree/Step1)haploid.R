@@ -206,9 +206,9 @@ mantel.test(dist(GPsA2),dist(GPsA4),trials=99) # 0.9
 
 ### 4. ###
 
-source("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/is.square.matrix.R")
-source("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/is.positive.definite.R")
-source("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/is.symmetric.matrix.R")
+source("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/is.square.matrix.R")
+source("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/is.positive.definite.R")
+source("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/is.symmetric.matrix.R")
 
 GPsA<-GPsA2   #269
 diag(fndrA) <- diag(fndrA) + 1e-5
