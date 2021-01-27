@@ -102,11 +102,12 @@ load(paste0(WD,"/ReorderPedigree/outCovComb_dip_0116_2021.Rdata"))
 
 #Hap
 #load("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/CovComb/outCovComb4_and_Conden.Rdata")
-load("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/Making_haploid_CovComb/hMat_hap_0114_2021.Rdata")
+load(paste0(WD,"/Making_haploid_CovComb/hMat_hap_0116_2021.Rdata"))
   outCovComb<-hMat_hap
   
   
   dim(outCovComb)
+  outCovComb[1:4,1:4]
 phenoNamesFact<-factor(dataNHpi_RMchk$Crosses,levels=rownames(outCovComb))   #colnames are sorted alphabetically for the outCovComb 
 msZ0<-model.matrix(~-1 +phenoNamesFact,data=dataNHpi_RMchk)  
 
@@ -193,7 +194,7 @@ names(h2hMat) <-names(Vu)<-names(ErrVar)<- c("AshFDwPM","AshOnly","wetWgtPlot", 
 allBLUPs <- cbind(msOutAshFDwPM$u,msOutAshOnly$u,msOutDWPMh$u,msOutWWPh$u,  msOutPDWh$u)
   dim(allBLUPs)
 colnames(allBLUPs) <- c("AshFDwPM","AshOnly","DWpM","WWP",  "PDW")
-write.csv(allBLUPs,"allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_0116_2021.csv")  
+write.csv(allBLUPs,"allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_0116_2021_hap.csv")  
 
 
 

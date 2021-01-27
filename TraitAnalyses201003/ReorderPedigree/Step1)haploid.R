@@ -263,22 +263,22 @@ save(outCovComb4_HapOrder,outCovComb4_Hapconden,file="outCovComb4_hap_Conden_011
 #####
 ### compare dip and hap outCovComb
 rm(list=ls())
-load("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/ReorderPedigree/outCovComb_files_0112_2021.Rdata")
+load("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/ReorderPedigree/outCovComb_dip_0116_2021.Rdata")
   outCovComb4_dipOrder[1:4,1:4]
   outCovComb4_dipOrder[103:106,103:106]
 hMat_dip<-outCovComb4_dipOrder
 
-load("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/Making_haploid_CovComb/outCovComb4_and_Conden_0113_2021.Rdata")
+load("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/Making_haploid_CovComb/outCovComb4_hap_Conden_0116_2021.Rdata")
 hMat_hap<-outCovComb4_HapOrder<-outCovComb4_Hapconden
 #load(paste0("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/hMat_PedNH_CCmat_fndrMrkData_Both_PhotoScore23_withSGP_866.rdata"))
 
-rownames(hMat_hap)<-rownames(hMat_dip)
+rownames(hMat_hap)<-rownames(hMat_dip)  # order of hMat_hap = biphasichapccMat=biphasicPedNH=hMat_dip
 colnames(hMat_hap)<-colnames(hMat_dip)
 
-save(hMat_hap,outCovComb4_Hapconden,file="hMat_hap_0114_2021.Rdata")
+save(hMat_hap,outCovComb4_Hapconden,file="/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/Making_haploid_CovComb/hMat_hap_0116_2021.Rdata")
 
 library(cultevo)
-mantel.test(dist(as.matrix(hMat_dip)),dist(as.matrix(hMat_hap)),trials=99) # r = 0.923???
+mantel.test(dist(as.matrix(hMat_dip)),dist(as.matrix(hMat_hap)),trials=99) # r =0.959  #47fndrs_in_fndrsA:0.923???
 ####
 
 
@@ -288,12 +288,12 @@ diag(hMat_hap2)<-NA
 hMat_dip2<-hMat_dip
 diag(hMat_dip2)<-NA
 
-cor.test(c(hMat_dip),c(hMat_hap))  # 0.964
-cor(c(hMat_hap2),c(hMat_dip2),use="complete")  # 0.955
-cor.test(c(hMat_hap[lower.tri(hMat_hap)]),c(hMat_dip[lower.tri(hMat_dip)])) #0.955
+cor.test(c(hMat_dip),c(hMat_hap))  #0.977  #47fndrs_in_fndrsA: 0.964
+cor(c(hMat_hap2),c(hMat_dip2),use="complete")  #0.972   #47fndrs_in_fndrsA: 0.955
+cor.test(c(hMat_hap[lower.tri(hMat_hap)]),c(hMat_dip[lower.tri(hMat_dip)])) #0.972  #47fndrs_in_fndrsA: 0.955
 
-cor(c(hMat_hap2[1:64,1:64]),c(hMat_dip2[1:64,1:64]),use="complete") # 0.617
-cor(c(hMat_hap[1:64,1:64]),c(hMat_dip[1:64,1:64]),use="complete") # 0.943
+cor(c(hMat_hap2[1:64,1:64]),c(hMat_dip2[1:64,1:64]),use="complete") #0.996  #47fndrs_in_fndrsA: 0.617
+cor(c(hMat_hap[1:64,1:64]),c(hMat_dip[1:64,1:64]),use="complete") #0.997  #47fndrs_in_fndrsA: 0.943
 
 
 # with diagonal  !!!
@@ -321,21 +321,39 @@ corM<-function(n1,n2,matrx1,matrx2){
 }
 
 # there is a total of 11 different categories
-cormatrix<-matrix(nrow=12,ncol=2)
+n1<-c(1,57,60,94,105,264,332,443,544,788,789,1)
+n2<-c(56,59,93,104,263,331,442,543,787,788,866,866)
+  length(n1)==length(n2)
+cormatrix<-matrix(nrow=length(n1),ncol=3)
 
 # each category has its own staring and ending row number in the pedigree matrix
 for (i in 1:nrow(cormatrix)){
-  n1<-c(1,65,71,94,105,264,332,443,544,788,789,1)
-  n2<-c(64,70,93,104,263,331,442,543,787,788,866,866)
-  cormatrix[i,1]<-corM(n1[i],n2[i],low_hapM,low_dipM)
-  cormatrix[i,2]<-corM(n1[i],n2[i],low_hapM2,low_dipM2)
+  cormatrix[i,1]<-n2[i]-n1[i]+1
+  cormatrix[i,2]<-corM(n1[i],n2[i],low_hapM,low_dipM)
+  cormatrix[i,3]<-corM(n1[i],n2[i],low_hapM2,low_dipM2)
 }
 
 cormatrix
-  colnames(cormatrix)<-c("WithDiagonal","noDiagonal")
-  rownames(cormatrix)<-c("fndr1","fndr2","fndr3","fndr5","GP1","GP2","GP3","GP5","SP1","SP2","SP_GP","All")
-# 
+  colnames(cormatrix)<-c("samplesize","WithDiagonal","noDiagonal")
+  rownames(cormatrix)<-c("fndrGP_geno","fndrGeno_GPNo","fndrNo_GPGeno","fndrGP_No","GP1","GP2","GP3","GP5","SP1","SP2","SP_GP","All")
 
+#58 in fndrsA 
+  # samplesize WithDiagonal noDiagonal
+  # fndrGP_geno           56    0.9988876  0.9984221
+  # fndrGeno_GPNo          3    0.9980901  0.9920499
+  # fndrNo_GPGeno         34    0.9932212  0.9866290
+  # fndrGP_No             11    1.0000000 -0.1306208   ## Off-diag all 0s
+  # GP1                  159    0.9811114  0.9568204
+  # GP2                   68    0.9952201  0.9907836
+  # GP3                  111    0.9768215  0.9667586
+  # GP5                  101    0.9932301  0.9909059
+  # SP1                  244    0.9779482  0.9751890
+  # SP2                    1    0.9233533  0.9163822
+  # SP_GP                 78    0.9651917  0.9543390
+  # All                  866    0.9804502  0.9724217
+  
+  
+#47 in fndrsA individuals
   # WithDiagonal noDiagonal
   # fndr1    0.9683710  0.6169740
   # fndr2    0.9139768  0.5249622

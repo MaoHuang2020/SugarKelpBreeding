@@ -1,4 +1,41 @@
 ### All the h2 to be compared
+#0116_2021 Diploid level outCovComb /// # fndrsA has 58 individuals
+#Vu
+AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM
+0.03657801        1.67339536        0.19179627        0.02091047       percDryWgt densityBladesPerM
+0.40835626     4502.66923115
+
+#ErrVar
+AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM        percDryWgt densityBladesPerM
+0.03968290       13.56477776        0.17973207        0.02497678        6.79483223    16253.40974651
+
+#round(h2hMat,3)
+AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM
+0.480             0.110             0.516             0.456
+percDryWgt densityBladesPerM
+0.057             0.217
+
+#0116_2021 Haploid level outCovComb /// # fndrsA has 58 individuals
+#Vu
+AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM
+0.06998921        4.69401916        0.37480285        0.04113738
+percDryWgt densityBladesPerM
+0.87509888     8820.21282438
+
+#ErrVar
+AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM
+0.04074012       12.91158190        0.17859730        0.02491998
+percDryWgt densityBladesPerM
+6.76223135    16209.40043123
+
+#round(h2hMat,3)
+AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM
+0.632             0.267             0.677             0.623
+percDryWgt densityBladesPerM
+0.115             0.352
+
+
+
 #0113_2021 Diploid level estimated relationship matrix
 AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM
 0.461             0.070             0.504             0.443
@@ -18,6 +55,14 @@ AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM
 percDryWgt densityBladesPerM
 6.81710397    16303.83523684
 
+
+#0114_2021 Haploid level estimated relationship matrix
+AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM
+0.617             0.256             0.679             0.622
+percDryWgt  densityBladesPerM
+0.122             0.348
+
+
 #Haploid level:
 #Vu
 AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM
@@ -31,12 +76,6 @@ percDryWgt densityBladesPerM
 6.73565154    16262.75622252
 
 
-
-#0114_2021 Haploid level estimated relationship matrix
-AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM
-0.617             0.256             0.679             0.622
-percDryWgt  densityBladesPerM
-0.122             0.348
 
 
 
