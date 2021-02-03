@@ -1,5 +1,5 @@
 ### All the h2 to be compared
-#0116_2021 Diploid level outCovComb /// # fndrsA has 58 individuals
+##0116_2021 Diploid level outCovComb /// # fndrsA has 58 individuals
 #Vu
 AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM
 0.03657801        1.67339536        0.19179627        0.02091047       percDryWgt densityBladesPerM
@@ -15,7 +15,7 @@ AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM
 percDryWgt densityBladesPerM
 0.057             0.217
 
-#0116_2021 Haploid level outCovComb /// # fndrsA has 58 individuals
+##0116_2021 Haploid level outCovComb /// # fndrsA has 58 individuals
 #Vu
 AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM
 0.06998921        4.69401916        0.37480285        0.04113738
@@ -33,6 +33,46 @@ AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM
 0.632             0.267             0.677             0.623
 percDryWgt densityBladesPerM
 0.115             0.352
+
+
+#### Using outCovComb4_dipOrder
+#### 2019
+#>   Vu
+AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM        percDryWgt
+0.0002931117      6.5043839091      0.0935348016      0.0039182014      0.2490103253
+densityBladesPerM
+7630.1405318762
+#>   ErrVar
+AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM        percDryWgt
+0.002862454       9.405566562       0.090203779       0.004753070       5.217586829
+densityBladesPerM
+19993.208059553
+#>   round(h2hMat,3)
+AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM        percDryWgt
+0.093             0.409             0.509             0.452             0.046
+densityBladesPerM
+0.276
+
+#### 2020
+#>   Vu
+AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM        percDryWgt
+0.06485479        3.59529674        0.20326176        0.02689236        2.21969818
+densityBladesPerM
+3867.90741987
+#>   ErrVar
+AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM        percDryWgt
+0.05452406       11.80193412        0.30100506        0.04943741        7.08842991
+densityBladesPerM
+10499.83617570
+#>   round(h2hMat,3)
+AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM        percDryWgt
+0.543             0.234             0.403             0.352             0.238
+densityBladesPerM
+0.269
+
+
+
+
 
 
 

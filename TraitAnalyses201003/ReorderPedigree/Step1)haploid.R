@@ -337,6 +337,19 @@ cormatrix
   colnames(cormatrix)<-c("samplesize","WithDiagonal","noDiagonal")
   rownames(cormatrix)<-c("fndrGP_geno","fndrGeno_GPNo","fndrNo_GPGeno","fndrGP_No","GP1","GP2","GP3","GP5","SP1","SP2","SP_GP","All")
 
+BLUP_dip<-read.csv("allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_0116_2021_dip.csv",sep=",",header=T)
+BLUP_hap<-read.csv("allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_0116_2021_hap.csv",sep=",",header=T)
+
+for (i in 1:(ncol(BLUP_dip)-1)){
+  print(cor(BLUP_dip[,(i+1)],BLUP_hap[,(i+1)]))
+}
+
+# #[1] 0.9921583
+# [1] 0.9884357
+# [1] 0.9908348
+# [1] 0.9858998
+# [1] 0.9899603
+
 #58 in fndrsA 
   # samplesize WithDiagonal noDiagonal
   # fndrGP_geno           56    0.9988876  0.9984221

@@ -1,49 +1,49 @@
 ###### Both Years
 ###################################
-library(rrBLUP)
 rm(list=ls())
+
+WD<-"/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003" ## !!
+setwd(WD)
+  getwd()
+  
+here::i_am("Code_10032020/Step3_Cleaned_V2.R") 
+library(here)
+  here()
+
+library(rrBLUP)
+
 load("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/dataNHpi_withChk_3_sets_PhotoScore23.rdata")   ## Plot
 load("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/dataNHim_withChk_3_sets_PhotoScore0123.rdata")  ## Indi
+  
+# load("dataNHpi_withChk_3_sets_PhotoScore23.rdata")   ## Plot
+# load("dataNHim_withChk_3_sets_PhotoScore0123.rdata")  ## Indi
+
 
 ### !!!!Both
 dataNHpi<-dataNHpiBoth_C  
 dataNHim<-dataNHimboth_C
 yr<-"Both"
-ls()
+  ls()
 head(dataNHpiBoth_C)
 
 
 # ### !!!!2019
-# dataNHpi<-dataNHpi19_C
-# dataNHim<-dataNHim19_C
-# yr<-"2019"
+dataNHpi<-dataNHpi19_C
+dataNHim<-dataNHim19_C
+yr<-"2019"
 # 
-# ### !!!!2020
-# dataNHpi<-dataNHpi20_C
-# dataNHim<-dataNHim20_C
-# yr<-"2020"
+### !!!!2020
+dataNHpi<-dataNHpi20_C
+dataNHim<-dataNHim20_C
+yr<-"2020"
 
 
 #load(paste0("hMat_PedNH_CCmat_fndrMrkData_",yr,"_PhotoScore23.rdata"))
 #load(paste0("hMat_PedNH_CCmat_fndrMrkData_Both_PhotoScore23_NoSGP.rdata"))
 ####
 
-WD<-"/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/"
-
-# load(paste0("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/hMat_PedNH_CCmat_fndrMrkData_Both_PhotoScore23_withSGP_866.rdata"))
-# load("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/ReorderPedigree/hMat_PedNH_CCmat_fndrMrkData_Both_PhotoScore23_WithSGP_866_Reorder_Pedigree.rdata")
-# hMat_dip<-hMat
-
-# load("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/Making_haploid_CovComb/outCovComb4_and_Conden.Rdata")
-# #hap
-# hMat_hap<-outCovComb4<-outCovComb4_conden
-
-# load(paste0(WD,"/Making_haploid_CovComb/hMat_hap_0114_2021.Rdata"))
-#   hMat_hap[1:4,1:5]
-#   
-  
-biphasicPedNH<-read.csv(paste0(WD,"/ReorderPedigree/Ped_in_Order_866_Individuals_Fndr_New_Order_0116_2021.csv"),sep=",",header=TRUE,row.names=1)
-
+ 
+biphasicPedNH<-read.csv(here("ReorderPedigree","Ped_in_Order_866_Individuals_Fndr_New_Order_0116_2021.csv"),sep=",",header=TRUE,row.names=1)
   biphasicPedNH[1:4,]
 spRows <- which(apply(biphasicPedNH[,2:3], 1, function(vec) all(vec > 0)))    ### Progeny sps, col 2 and 3 are all values
 nSp <- length(spRows)
@@ -54,12 +54,12 @@ dataNHpi$popChk <- ifelse(substr(dataNHpi$plotNo, 1, 1) == "Z", substr(dataNHpi$
 dataNHpi$withinLoc <- ifelse(as.vector(dataNHpi$femaParLoc) == as.vector(dataNHpi$maleParLoc), 1, 0) # WithinLoc is 1
 dataNHpi$development[dataNHpi$development=="#N/A"] <-NA
 
-
 # Experimental design variables should be factors
 for (col in c( "Year", "plotNo","GrowDays","femaPar", "femaParLoc", "malePar", "maleParLoc", "PlantingDens", "block", "line","popChk")) 
   dataNHpi[,col] <- factor(dataNHpi[,col])
   nlevels(dataNHpi$plotNo)
-
+  nlevels(dataNHpi$Year)
+  unique(dataNHpi$Year)
 # Make data cols numeric. Enforce data is numeric
 for (col in c("wetWgtPlot", "lengthPlot", "wetWgtPerM","percDryWgt",  "dryWgtPerM","densityBlades","AshFreedryWgtPerM","AshFDwPM")) 
   dataNHpi[,col] <- as.numeric(dataNHpi[,col])
@@ -93,17 +93,15 @@ nrowplot<-nrow(dataNHpi_RMchk)
 nrowchk<-nrow(dataNHpi) - nrowplot
 
 
-#load("outCovComb4_09282020.Rdata")
 ##{{}}
 ##{{}}
 #Dip
-load(paste0(WD,"/ReorderPedigree/outCovComb_dip_0116_2021.Rdata"))
+load(here("ReorderPedigree","outCovComb_dip_0116_2021.Rdata"))
   outCovComb<-outCovComb4_dipOrder
 
-#Hap
-#load("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/CovComb/outCovComb4_and_Conden.Rdata")
-load(paste0(WD,"/Making_haploid_CovComb/hMat_hap_0116_2021.Rdata"))
-  outCovComb<-hMat_hap
+# #Hap
+# load(here("Making_haploid_CovComb","hMat_hap_0116_2021.Rdata"))
+#   outCovComb<-hMat_hap
   
   
   dim(outCovComb)
@@ -116,10 +114,10 @@ identical(colnames(outCovComb)[544:787],levels(dataNHpi_RMchk$Crosses)) ####this
 
 ## 3. chks rows
 chkSpMat<-matrix(0, nrowchk, nrow(outCovComb))
-  dim(chkSpMat)   # 33 x 866
+  dim(chkSpMat)   # 33 x 866  # 2019, 17 x 866  # 2020, 16 x 866
 #  
 msZ<-rbind(msZ0,chkSpMat)
-  dim(msZ)   # 283 x 866
+  dim(msZ)   # 283 x 866   # 2019, 139 x 866  # 2020, 144x866
 
   
 # Calculate heritability from the mixed.solve output
@@ -135,23 +133,24 @@ ErrVar<-function(msOut){
  msOut$Ve
 }
 
-write.csv(dataNHpi,paste0("dataNHpi_Last_Used_in_Model_",yr,".csv"))
+#write.csv(dataNHpi,paste0("dataNHpi_Last_Used_in_Model_",yr,".csv"))
 
 ########### 6. FINALE !! RUN Model WITHOUT blade density as covariate, but use hMat as the relationship matrx
 
 #{}
 hMat<-outCovComb
-# #Within Year !!!! 2019 2020
-# msX1 <- model.matrix( ~ line+block, data=dataNHpi)
-# msX1 <- msX1[, apply(msX1, 2, function(v) !all(v == 0))]
-
-dataNHpi<-droplevels(dataNHpi)
-msX1 <- model.matrix( ~ line%in%Year+block%in%Year+Year, data=dataNHpi)  ### !!!! No popChk because no checks for ashes
+#Within Year !!!! 2019 2020
+msX1 <- model.matrix( ~ line+block, data=dataNHpi)
 msX1 <- msX1[, apply(msX1, 2, function(v) !all(v == 0))]
+
+#Both Years !!!!!
+ dataNHpi<-droplevels(dataNHpi)
+ msX1 <- model.matrix( ~ line%in%Year+block%in%Year+Year, data=dataNHpi)  ### !!!! No popChk because no checks for ashes
+ msX1 <- msX1[, apply(msX1, 2, function(v) !all(v == 0))]
 
 library(Matrix)
 rankMatrix(msX1)
-qr(msX1)$rank  #27
+qr(msX1)$rank  #Both, 27;  2019, 12
 
 msOutAshFDwPM<-mixed.solve(y=dataNHpi$AshFDwPM,Z=msZ, K=hMat, X=msX1, SE=T)
 msOutAshOnly<-mixed.solve(y=dataNHpi$Ash,Z=msZ,K=hMat,X=msX1,SE=T)
@@ -159,11 +158,12 @@ msOutAshOnly<-mixed.solve(y=dataNHpi$Ash,Z=msZ,K=hMat,X=msX1,SE=T)
 msOutAshFreeDW<-mixed.solve(y=dataNHpi$AshFreedryWgtPerM,Z=msZ, K=hMat, X=msX1, SE=T)
   heritability(msOutAshFreeDW) #both 0.561 #2019 #2020 0.7995067   # Dave cal
   heritability(msOutAshFDwPM) #both 0.461 #2019 #2020 0.5173875    # my cal
-  heritability(msOutAshOnly)  #both 0.070
+  heritability(msOutAshOnly)  #both 0.070 
+  
   
 # Within Year !!!! 2019 2020
-# msX <- model.matrix( ~ line+block+popChk, data=dataNHpi)  
-# msX <- msX[, apply(msX, 2, function(v) !all(v == 0))]
+ msX <- model.matrix( ~ line+block+popChk, data=dataNHpi)  
+ msX <- msX[, apply(msX, 2, function(v) !all(v == 0))]
 
 
 ### This two differs between years. put in the beginning to use them
@@ -1258,3 +1258,7 @@ haprm<-grep(paste(other,collapse="|"),rownames(outCovSample))
 outCovSample2<-outCovSample[-haprm,-haprm]
 
 write.csv(outCovSample2,"outCovSample_TODiego.csv")
+
+#### Datafile in the 2020_2019_Phenotypic_Data path
+# #load("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/CovComb/outCovComb4_and_Conden.Rdata")
+
