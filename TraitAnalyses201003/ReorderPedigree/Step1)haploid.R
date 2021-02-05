@@ -263,12 +263,12 @@ save(outCovComb4_HapOrder,outCovComb4_Hapconden,file="outCovComb4_hap_Conden_011
 #####
 ### compare dip and hap outCovComb
 rm(list=ls())
-load("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/ReorderPedigree/outCovComb_dip_0116_2021.Rdata")
+load(here("TraitAnalyses201003/ReorderPedigree","outCovComb_dip_0116_2021.Rdata"))
   outCovComb4_dipOrder[1:4,1:4]
   outCovComb4_dipOrder[103:106,103:106]
 hMat_dip<-outCovComb4_dipOrder
 
-load("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/Making_haploid_CovComb/outCovComb4_hap_Conden_0116_2021.Rdata")
+load(here("TraitAnalyses201003/Making_haploid_CovComb","outCovComb4_hap_Conden_0116_2021.Rdata"))
 hMat_hap<-outCovComb4_HapOrder<-outCovComb4_Hapconden
 #load(paste0("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/hMat_PedNH_CCmat_fndrMrkData_Both_PhotoScore23_withSGP_866.rdata"))
 
@@ -281,7 +281,6 @@ library(cultevo)
 mantel.test(dist(as.matrix(hMat_dip)),dist(as.matrix(hMat_hap)),trials=99) # r =0.959  #47fndrs_in_fndrsA:0.923???
 ####
 
-
 hMat_hap2<-hMat_hap
 diag(hMat_hap2)<-NA
 
@@ -292,8 +291,8 @@ cor.test(c(hMat_dip),c(hMat_hap))  #0.977  #47fndrs_in_fndrsA: 0.964
 cor(c(hMat_hap2),c(hMat_dip2),use="complete")  #0.972   #47fndrs_in_fndrsA: 0.955
 cor.test(c(hMat_hap[lower.tri(hMat_hap)]),c(hMat_dip[lower.tri(hMat_dip)])) #0.972  #47fndrs_in_fndrsA: 0.955
 
-cor(c(hMat_hap2[1:64,1:64]),c(hMat_dip2[1:64,1:64]),use="complete") #0.996  #47fndrs_in_fndrsA: 0.617
-cor(c(hMat_hap[1:64,1:64]),c(hMat_dip[1:64,1:64]),use="complete") #0.997  #47fndrs_in_fndrsA: 0.943
+cor(c(hMat_hap2[1:56,1:56]),c(hMat_dip2[1:56,1:56]),use="complete") #0.996  #47fndrs_in_fndrsA: 0.617
+cor(c(hMat_hap[1:56,1:56]),c(hMat_dip[1:56,1:56]),use="complete") #0.997  #47fndrs_in_fndrsA: 0.943
 
 
 # with diagonal  !!!
@@ -321,6 +320,11 @@ corM<-function(n1,n2,matrx1,matrx2){
 }
 
 # there is a total of 11 different categories
+#  rownames(cormatrix)<-c("fndrGP_geno","fndrGeno_GPNo","fndrNo_GPGeno","fndrGP_No","GP1","GP2","GP3","GP5","SP1","SP2","SP_GP","All")
+# GP1, GP3 ---GPs genotyped
+# GP2, GP4, GP5 ---GPs not genotyped
+# SP1, SP2 --- SPs
+
 n1<-c(1,57,60,94,105,264,332,443,544,788,789,1)
 n2<-c(56,59,93,104,263,331,442,543,787,788,866,866)
   length(n1)==length(n2)
@@ -337,8 +341,24 @@ cormatrix
   colnames(cormatrix)<-c("samplesize","WithDiagonal","noDiagonal")
   rownames(cormatrix)<-c("fndrGP_geno","fndrGeno_GPNo","fndrNo_GPGeno","fndrGP_No","GP1","GP2","GP3","GP5","SP1","SP2","SP_GP","All")
 
-BLUP_dip<-read.csv("allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_0116_2021_dip.csv",sep=",",header=T)
-BLUP_hap<-read.csv("allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_0116_2021_hap.csv",sep=",",header=T)
+  GPs_genotyped_rows<-c(105:263,332:442)
+  GPs_NOTgenotyped_rows<-c(264:331,443:543,789:866)
+  SPs_rows<-c(544:788)
+  SPs_GPs_rows<-c(789:866)
+ 
+cor2<-function(rows,data1=low_hapM,data2=low_dipM){
+  cor2<-cor(c(data1[rows,rows]),c(data2[rows,rows]),use="complete")
+  print(dim(data1[rows,rows]))
+  print(cor2)
+} 
+cor.GPs_genotyped_rows<-cor2(rows=GPs_genotyped_rows)  
+cor.GPs_NOTgenotyped_rows<-cor2(rows=GPs_NOTgenotyped_rows) # Included the SPs_GPs_row  
+cor.SPs_rows<-cor2(SPs_rows)  
+cor_SPs_GPs_rows<-cor2(SPs_GPs_rows)
+
+  
+BLUP_dip<-read.csv(here("allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_0116_2021_dip.csv"),sep=",",header=T)
+BLUP_hap<-read.csv(here("allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_0116_2021_hap.csv"),sep=",",header=T)
 
 for (i in 1:(ncol(BLUP_dip)-1)){
   print(cor(BLUP_dip[,(i+1)],BLUP_hap[,(i+1)]))
