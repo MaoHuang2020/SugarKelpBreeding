@@ -59,12 +59,12 @@ geno2[geno2==0]=-1
 geno2[geno2==1]=0
 geno2[geno2==2]=1
 
-biphasicPedNH<-read.csv(paste0(InputFile,"/Ped_in_Order_866_Individuals_Fndr_New_Order_0116_2021.csv"),sep=",",header=TRUE,row.names=1)
+biphasicPedNH<-read.csv(here("TraitAnalyses201003/ReorderPedigree","Ped_in_Order_866_Individuals_Fndr_New_Order_0116_2021.csv"),sep=",",header=TRUE,row.names=1)
   # To get the pedigree at diploid level": "biphasicPedNH"
-source("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/Making_haploid_CovComb/calcCCmatrixBiphasic.R")  
+source(here("TraitAnalyses201003/Making_haploid_CovComb","calcCCmatrixBiphasic.R")) 
   # To get the function calculating haploid level ccMatrix
 
-load("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/SugarKelpBreeding_NoGitPush/GenotypicData_for_SugarKelpBreeding/GPs_mainGenome_NA0.8_P1P2P3.Rdata")
+load(here("../2020_2019_Phenotypic_Data/SugarKelpBreeding_NoGitPush/GenotypicData_for_SugarKelpBreeding","GPs_mainGenome_NA0.8_P1P2P3.Rdata"))
   # To get the GPs the raw SNPs data: "GPSNP" is the raw SNPs"
 
 ###IF to RUN in Terminal
@@ -123,7 +123,6 @@ for (i in 1:nrow(biphasicPedNH)){
   if(!is.na(biphasicPedNH[i,2]) & !is.na(biphasicPedNH[i,3])){
     # this is diploid, both parents have numbers
     pedinames<-c(pedinames,rownames(biphasicPedNH)[i],paste0(rownames(biphasicPedNH)[i],"_2"))
-
   }else{
     # this is GP, one parent is missing
     pedinames<-c(pedinames,rownames(biphasicPedNH)[i])
@@ -131,7 +130,6 @@ for (i in 1:nrow(biphasicPedNH)){
 }
 
 rownames(biphasichapccMat)<-colnames(biphasichapccMat)<-pedinames
-
 
 
 #### 3. GPs data  # did not redo this part on 0116_2021
@@ -190,7 +188,7 @@ GPsA<-calcGenomicRelationshipMatrix(GPsMrkImp,ploidy=1)
 
 GPsA2<-calcGenomicRelationshipMatrix(onerow,ploidy=1) ##Use This !!!## This function assumes data to be 0 and 1 for haploid
 
-mantel.test(dist(GPsA),dist(GPsA2),trials=99) # 0.969
+cultevo::mantel.test(dist(GPsA),dist(GPsA2),trials=99) # 0.969
   
 M<-GPsMrkImp
 GPsA3<-cov(t(M))/mean(diag(cov(t(M))))
@@ -236,8 +234,8 @@ save(hapOnePointer,dipTwoPointers,file="Pointers_from_biphasichapccMat_0116_2021
 
 ##{{Done in terminal}}
 library(CovCombR)
-load("Newly_saved_3_As_for_CovComb_0116_2021.Rdata")
-load("Pointers_from_biphasichapccMat_0116_2021.Rdata")
+load(here("TraitAnalyses201003/ReorderPedigree","Newly_saved_3_As_for_CovComb_0116_2021.Rdata"))
+load(here("TraitAnalyses201003/ReorderPedigree","Pointers_from_biphasichapccMat_0116_2021.Rdata"))
 
 CovList<-NULL
 CovList[[1]]<-fndrA ## fndrsA

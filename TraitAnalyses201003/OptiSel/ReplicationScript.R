@@ -12,7 +12,6 @@
 rm(list=ls())
 setwd("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/")
 #install.packages("here")
-library(here)
 
 here::i_am("TraitAnalyses201003/OptiSel/ReplicationScript.R")
 setwd("TraitAnalyses201003/OptiSel/Examples")
@@ -49,19 +48,19 @@ phenGP$Region<-ifelse(phenGP$loc%in%GOM,"GOM","SNE")
   head(phenGP)
   phenGP[phenGP$Region=="SNE",]$loc%in%SNE
 
-phenGP<-phenGP[phenGP$Region=="SNE",]  # 405 individuals
+phenGP<-phenGP[phenGP$Region=="GOM",]  # 405 individuals
 phenGP<-phenGP[,-c((ncol(phenGP)-1),ncol(phenGP))] # rm loc and Region cols
 
 grmGP <- fPED[rownames(fPED)%in%rownames(phenGP), colnames(fPED)%in%rownames(phenGP)]
   ### Order phenGP and grmGP?
 phenGP<-phenGP[match(rownames(phenGP),rownames(grmGP)),]
   
-forOptiSel <- data.frame(Indiv=rownames(phenGP), Trait=phenGP$AshFDwPM,Sex=phenGP$Sex)  ### Trait here!!!
+forOptiSel <- data.frame(Indiv=rownames(phenGP), Trait=phenGP$DWpM,Sex=phenGP$Sex)  ### Trait here!!!
 #invisible(capture.output(cand2 <- optiSel::candes(forOptiSel, grm=grmGP, quiet=T)))
 cand <- optiSel::candes(forOptiSel, grm=grmGP)
 cand$mean
-#allNe <- c(6, 15, 30, 60, 150, 300, 600, 1500)
-allNe<-c(60,600)
+allNe <- c(6, 30, 60, 300, 600, 1200)
+#allNe<-c(60,600)
 ocList<-NULL
 ocGP <- NULL
 for (Ne in allNe){
@@ -118,16 +117,31 @@ Select_DwPM_oc$FemaleRank_DwPM_oc<-c(1:nrow(Select_DwPM_oc))
 
 ####Plot the maximum contribution as a function of Ne
 colnames(ocGP)<-paste0("Ne",allNe)
-ggplot(data=NULL,aes(allNe,apply(ocGP, 2, max)))+
-  geom_point()+
-  scale_x_continuous(trans="log10")
 
-# Plot how many GP should have contribution of at least 2% of max contribution
-closeToMax <- apply(ocGP, 2, function(vec) sum(vec > max(vec)/50))
-
-ggplot(data=NULL,aes(allNe,closeToMax))+
+plotA<-ggplot(data=NULL,aes(log10(allNe),apply(ocGP, 2, max)))+
   geom_point()+
-  scale_x_continuous(trans="log10")
+  ylab("Maximum OC value")+
+  xlab("log10(Ne)")+
+  theme_bw()+
+  theme(panel.grid.major = element_blank())
+
+#scale_x_continuous(trans="log10",breaks=c(),label=c())
+
+# Plot how many GP should have contribution of at least 10% of max contribution
+closeToMax <- apply(ocGP, 2, function(vec) sum(vec > max(vec)*0.05))
+
+plotB<-ggplot(data=NULL,aes(log10(allNe),closeToMax))+
+  geom_point()+
+  xlab("log10(Ne)")+
+  ylab("Number of GPs > 5% of maximum OC")+
+  theme_bw()+
+  theme(panel.grid.major = element_blank())
+
+library(ggpubr)
+ggarrange(plotA, plotB,
+          ncol = 2, nrow = 1,
+          common.legend = TRUE)
+
 ##################################
 # 
 data2<-read.csv("Candidates_TwoTraits_oc_0204_2021.csv",sep=",",header=T)

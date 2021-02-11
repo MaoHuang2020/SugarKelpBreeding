@@ -1,0 +1,32 @@
+ID,Female GP ID,Cross To Male_GP ID,GPcheckF,GPcheckM,Jan21_dominantstage,SP_avgsize_mm,Green,Shaker,Notes,,Feb4_dominantstage,SP_avgsize_mm,Density_SP,Green,Notes
+1,SL19-UCONN-107-FG2,SL19-UCONN-152-MG5,"Dead, bleached",Half dead; sparse,nothing,NA,Y,,,,SP,10,L,Y,one SP blade
+2,SL19-UCONN-114-FG4,SL20-MB-3-MG6,Mostly dead; sparse,Alive,GP,NA,,Y,,,SP,2,L,,
+3,SL20-MB-12-FG13,SL19-UCONN-176-MG6,"Dead, bleached",Half dead,SP,4,,,,,SP,6,H,,
+4,SL20-MB-12-FG13,SL19-UCONN-25-MG9,"Dead, bleached",Alive; very sparse,GP+SP,1,,Y,,,SP,10,M,,
+5,SL20-MB-3-FG3,SL19-UCONN-107-MG1,Half dead,Alive; sparse,GP,NA,Y,Y,sparse,,SP,3,L,Y,one SP blade
+6,SL20-MB-4-FG1,SL19-UCONN-114-MG2,Half dead,Alive,SP,4,,,,,SP,5,M,,
+7,SL19-UCONN-176-FG10,SL19-UCONN-265-MG8,Alive,Half dead,SP,2,,,,,SP,4,H,,
+8,SL19-UCONN-185-FG3,SL19-UCONN-121-MG2,Alive,Half dead,GP,NA,Y,Y,,,GP+SP,1,L,Y,sparse SP
+9,SL19-UCONN-265-FG9,SL19-UCONN-185-MG4,"Dead, bleached",Alive? (fuzzy clusters); sparse,GP+SP,2,,Y,sparse SP,,SP,2,L,Y,
+10,SL19-UCONN-121-FG3,SL19-UCONN-156-MG4,Alive; very sparse,Alive,SP,2,,,sparse,,SP,8,M,,
+11,SL19-UCONN-156-FG3,SL19-UCONN-160-MG2,Half dead,Half dead,SP,5,Y,,,,SP,20,H,Y,
+12,SL19-UCONN-152-FG4,SL19-UCONN-56-MG1,Mostly dead,Half dead,nothing,NA,,,,,GP,NA,NA,,
+13,SL19-UCONN-160-FG1,SL19-UCONN-44-MG3,Mostly dead; very sparse,Alive,SP,4,Y,,sparse,,SP,20,L,Y,
+14,SL19-UCONN-44-FG1,SL19-UCONN-113-MG2,Half dead,Alive,GP,NA,,Y,,,GP,NA,NA,,
+15,SL19-UCONN-56-FG2,SL19-UCONN-152-MG5,Alive,Half dead; sparse,SP,4,,,sparse - one cluster,,SP,10,L,,sparse - one cluster
+16,SL19-UCONN-113-FG3,SL19-UCONN-278-MG3,Alive; sparse,Alive? (fuzzy clusters),GP,NA,,Y,one SP blade 2mm in size,,SP,5,L,,
+17,SL19-UCONN-278-FG5,SL19-UCONN-139-MG6,Half dead,Alive,SP,4,,,,,SP,10,L,,
+18,SL19-UCONN-139-FG5,SL19-UCONN-23-MG4,Alive,Alive; very sparse,GP,NA,,Y,,,GP,NA,NA,,
+19,SL19-UCONN-10-FG3,SL19-UCONN-53-MG1,Alive,Alive; sparse,SP,2,,,,,SP,5,H,,
+20,SL19-UCONN-23-FG4,SL19-UCONN-119-MG4,Mostly dead; sparse,Alive,GP,NA,,Y,sparse,,SP,5,L,,two SP blades
+21,SL19-UCONN-90-FG1,SL19-UCONN-10-MG7,Alive,Alive,SP,4,,,,,SP,12,H,,
+22,SL19-UCONN-53-FG2,SL19-UCONN-141-MG5,Alive; sparse,Mostly dead; very sparse,nothing,NA,,,,,nothing,NA,NA,,
+23,SL19-UCONN-119-FG3,SL19-UCONN-144-MG2,Alive,Alive? (fuzzy clusters),GP+SP,1,,Y,,,SP,8,M,,
+24,SL19-UCONN-144-FG1,SL19-UCONN-90-MG3,Alive (some dead cells),Alive,SP,5,,,,,SP,20,H,,very dense
+25,SL19-UCONN-25-FG4,SL19-UCONN-172-MG3,"Dead, bleached",Mostly dead; very sparse,GP,NA,,,sparse,,GP,NA,NA,,
+26,SL19-UCONN-158-FG8,SL20-MB-4-MG4,Mostly dead; very sparse,Mostly dead; very sparse,nothing,NA,,,,,SP,3,L,,two SP blades
+27,SL19-UCONN-57-FG15,SL19-UCONN-57-MG13,Alive,Alive,SP,4,,,,,SP,10,M,,
+28,SL19-UCONN-172-FG2,SL19-UCONN-158-MG2,Mostly dead,"Dead, bleached",nothing,NA,,,,,SP,1,,Y,two SP blades
+29,SL19-UCONN-143-FG2,SL19-UCONN-42-MG7,Alive,Alive; very sparse,SP,4,,,,,SP,20,H,,
+30,SL19-UCONN-42-FG8,SL19-UCONN-143-MG8,Alive,Alive (female?),GP,NA,,Y,,,SP,2,L,,
+31,SL19-UCONN-141-FG4,SL20-MB-12-MG8,Mostly dead; very sparse,Alive,GP,NA,,Y,,,GP,NA,NA,,
