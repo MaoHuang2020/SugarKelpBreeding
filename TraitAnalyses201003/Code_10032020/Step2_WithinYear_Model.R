@@ -144,9 +144,13 @@ msX <- msX[, apply(msX, 2, function(v) !all(v == 0))]
   # which(msZ[129,]==1) #325
   # hMat[325:326,325:326]
   
-  ### Automate the msZ
-  load("outCovComb_files.Rdata")
-  identical(rownames(outCovComb1),rownames(outCovComb4)) #### 
+  # ### Automate the msZ
+  # load("outCovComb_files.Rdata")
+  # identical(rownames(outCovComb1),rownames(outCovComb4)) #### 
+  # 
+  
+  load(here("ReorderPedigree","outCovComb_dip_0116_2021.Rdata"))
+  outCovComb<-outCovComb4_dipOrder
   
   outCovComb<-outCovComb4   ###!!!!!!
   
