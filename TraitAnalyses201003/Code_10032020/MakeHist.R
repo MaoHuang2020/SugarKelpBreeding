@@ -92,38 +92,52 @@ segment_data2 = data.frame(
  # h2_20<-read.csv("heritability_all_2020.csv",sep=",",header=T)
  # h2_Both<-read.csv("heritability_all_Both.csv",sep=",",header=T)
  # 
- 
-h2<-read.csv("Heritabilities_2019_2020_Both_with_0116_2021_outCovComb.csv",sep=",",header=T)
+h2Plot_UpdateAsh<-NULL 
+years<-c("Both","2019","2020")
+for (yr in years){
+  h2<-read.csv(paste0(wd,"/H2_Plot_Level_",yr,"years.csv"),sep=",",header=TRUE,row.names=1) 
+  h2Plot_UpdateAsh<-rbind(h2Plot_UpdateAsh,h2[rownames(h2)=="h2hMat",])
+} 
+rownames(h2Plot_UpdateAsh)<-years
+write.csv(h2Plot_UpdateAsh,paste0(wd,"/h2Plot_level_UpdateAsh.csv"))
 
- h2_Both$h_2019<-vlookup(h2_Both$X,dict=h2_19,result_column = "x",lookup_column = "X")
- h2_Both$h_2020<-vlookup(h2_Both$X,dict=h2_20,result_column = "x",lookup_column = "X")
-  head(h2_Both)
-  head(h2_20)
-  head(h2_19)
-rownames(h2_Both)<-h2_Both$X
-h2_Both<-h2_Both[,-1]
 
-h2PlIn<-as.data.frame(t(h2_Both))
-h2PlIn$Data<-c("Both","2019","2020")
-  head(h2PlIn)
-  str(h2PlIn) 
-  
-write.csv(h2PlIn,"heritabilities_h2PlIn.csv")  
+
+# h2<-read.csv("Heritabilities_2019_2020_Both_with_0116_2021_outCovComb.csv",sep=",",header=T)
+# 
+#  h2_Both$h_2019<-vlookup(h2_Both$X,dict=h2_19,result_column = "x",lookup_column = "X")
+#  h2_Both$h_2020<-vlookup(h2_Both$X,dict=h2_20,result_column = "x",lookup_column = "X")
+#   head(h2_Both)
+#   head(h2_20)
+#   head(h2_19)
+# rownames(h2_Both)<-h2_Both$X
+# h2_Both<-h2_Both[,-1]
+# 
+# h2PlIn<-as.data.frame(t(h2_Both))
+#h2PlIn$Data<-c("Both","2019","2020")
+#   head(h2PlIn)
+#   str(h2PlIn) 
+#   
+# write.csv(h2PlIn,"heritabilities_h2PlIn.csv")  
 ###### Made the h2PlIn the format it needs
-  
+h2PlIn<-read.csv(paste0(wd,"/h2Plot_level_UpdateAsh.csv"),sep=",",header=TRUE,row.names=1)  
+h2PlIn$Data<-rownames(h2PlIn)
+  h2PlIn
+
+h2PlIn<-h2PlIn[,!colnames(h2PlIn)=="C.N.ratio"]  
  #wide to long format
  library(tidyr)
 # Gather different traits,what is their value called, from col1:colN 
-h2PI<-gather(h2PlIn,Trait,Herit,AshFDwPM:stipeDiameter,factor_key = T)
+h2PI<-gather(h2PlIn,Trait,Herit,AshFDwPM:SL,factor_key = T)
  head(h2PI)
 
-levels(h2PI$Trait) <-c("AshFDwPM","Ash","WWP","DWpM","pDW","BD","BL","BmWid","BTh","SL","SDia")
-  head(h2PI)
+# levels(h2PI$Trait) <-c("AshFDwPM","Ash","WWP","DWpM","pDW","BD","BL","BmWid","BTh","SL","SDia")
+#   head(h2PI)
 
 ggplot(h2PI,aes(fill=Data,y=Herit,x=Trait))+
       geom_bar(position=position_dodge(),stat="identity")
       
-
+####### Saved the updated heritability plot
 # 
 h2PL<-read.csv("Heritabilities_Plot_Scenarios.csv",sep=",",header=T)
   head(h2PL) 

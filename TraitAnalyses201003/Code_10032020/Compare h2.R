@@ -1,4 +1,10 @@
 ### All the h2 to be compared
+
+AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM        percDryWgt
+0.300             0.135             0.516             0.456             0.057
+densityBladesPerM
+0.217
+
 ##0116_2021 Diploid level outCovComb /// # fndrsA has 58 individuals
 #Vu
 AshFDwPM           AshOnly        wetWgtPlot        dryWgtPerM

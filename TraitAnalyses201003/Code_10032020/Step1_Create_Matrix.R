@@ -3,19 +3,45 @@
 # Estimate line and block affect using checks (C-1 and C-2 etc.)
 # Estimated breeding value 
 # Use called SNPs for marker-based relationship matrix
+rm(list=ls())
 library(here)
 here()
 #"/Users/maohuang/Desktop/Kelp/SugarKelpBreeding"
 
-WD<-here("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/ReorderPedigree")
-rm(list=ls())
+dataDir<-here("TraitAnalyses201003/data")
+
   ls()
 library(magrittr)
 library(rrBLUP)
 
 ### Manually !!! Make 2020 Yr plotNo unique from 2019 Yr plotNo
 ###!!!!!!!!!!!!!!!!!!!!
-dataAll <-read.csv("dataNHpi_ManuallyAddGrowth_9.29.20_Ireland_Data_AshFDWpM.csv",sep=",",header=TRUE) ##!!!
+#dataAll <-read.csv("dataNHpi_ManuallyAddGrowth_9.29.20_Ireland_Data_AshFDWpM.csv",sep=",",header=TRUE) ##!!!
+
+dataAll <-read.csv(paste0(dataDir,"/Allplotdata_03.08.2021.csv"),sep=",",header=TRUE) ##!!!
+  str(dataAll)  
+  
+### Deal with Ash ---- 0309_2021
+CombineTrait<-function(data=dataAll,TraitName1="Ash..Celignis.",TraitName2="Ash..WHOI."){
+  trait<-c()
+  for (i in 1:nrow(data)){
+    trait1<-data[,TraitName1][i]
+    trait2<-data[,TraitName2][i]
+    if (is.na(trait1)){
+      trait[i]<-trait2
+    }else if(!is.na(trait1) & !is.na(trait2)){
+      trait[i]<-mean(c(trait1,trait2))
+    }else if (!is.na(trait1) & is.na(trait2)){
+      trait[i]<-trait1
+    }
+  }
+  return(trait)
+}
+
+dataAll$Ash<-CombineTrait(data=dataAll,TraitName1 = "Ash..Celignis.",TraitName2 = "Ash..WHOI.")  
+dataAll$C_N1<-dataAll$Carbon..Celignis./dataAll$Nitrogen..Celignis. 
+
+dataAll$C_N_Combine<-CombineTrait(data=dataAll,TraitName1="C_N1",TraitName2="C.N..UCONN.")
 
 dataAll$AshFDwPM<-(dataAll$wetWgtPerM*dataAll$percDryWgt/100)*(1-(dataAll$Ash/100))
 dataAll$popChk <- ifelse(substr(dataAll$plotNo, 1, 1) == "Z", substr(dataAll$plotNo, 1, 2), "ES")  # Checks VS ES
@@ -46,10 +72,10 @@ dataNHpi20_C<-dataNHpi20_C[order(dataNHpi20_C$plotNo),]  ## Order plotNo alphabe
 dataNHpiBoth_C<-dataNHpi  ## Order plotNo alphabetically
 dataNHpiBoth_C<-dataNHpiBoth_C[order(dataNHpiBoth_C$plotNo),] ## Order plotNo alphabetically
 
-save(dataNHpi19_C,dataNHpi20_C,dataNHpiBoth_C,file="dataNHpi_withChk_3_sets_PhotoScore23.rdata")
+#save(dataNHpi19_C,dataNHpi20_C,dataNHpiBoth_C,file="dataNHpi_withChk_3_sets_PhotoScore23.rdata")
+save(dataNHpi19_C,dataNHpi20_C,dataNHpiBoth_C,file=paste0(dataDir,"/dataNHpi_withChk_3_sets_PhotoScore23_UpdateAsh_0309_2021.rdata"))
 
-
-############################## Run it Only Once !!!! Fndrs Amat
+########################### Run it Only Once !!!! Fndrs Amat
 ##############3 RM "checks"
 dataNHpi_rmChk<-dataNHpi[!dataNHpi$crossID=="Check",]    # 250
 FMGPs<-unique(c(as.character(dataNHpi_rmChk$femaPar),as.character(dataNHpi_rmChk$malePar)))

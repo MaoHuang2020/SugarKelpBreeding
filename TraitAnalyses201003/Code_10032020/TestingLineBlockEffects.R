@@ -5,11 +5,14 @@ rm(list=ls())
 #load("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/dataNHpi_withChk_3_sets_PhotoScore23.rdata")   ## Plot
 #load("dataNHim_withChk_3_sets_PhotoScore0123.rdata")  ## Indi
 
+wd<-("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/")
+datafdr<-paste0(wd,"TraitAnalyses201003/data/")
 
-dataAll <-read.csv("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/dataNHpi_ManuallyAddGrowth_9.29.20_Ireland_Data_AshFDWpM.csv",sep=",",header=TRUE) ##!!!
+load(paste0(datafdr,"dataNHpi_withChk_3_sets_PhotoScore23_UpdateAsh_0309_2021.rdata"))
+dataAll <-dataNHpiBoth_C
 
-dataAll$AshFDwPM<-(dataAll$wetWgtPerM*dataAll$percDryWgt/100)*(1-(dataAll$Ash/100))
-dataAll$popChk <- ifelse(substr(dataAll$plotNo, 1, 1) == "Z", substr(dataAll$plotNo, 1, 2), "ES")  # Checks VS ES
+#dataAll$AshFDwPM<-(dataAll$wetWgtPerM*dataAll$percDryWgt/100)*(1-(dataAll$Ash/100))
+#dataAll$popChk <- ifelse(substr(dataAll$plotNo, 1, 1) == "Z", substr(dataAll$plotNo, 1, 2), "ES")  # Checks VS ES
 
 # exptlSP <- as.character(dataAll$popChk) == "ES"
 # dataAll$entry <- as.character(dataAll$popChk)
@@ -21,38 +24,84 @@ head(dataAll)
 dataAll[1:10,]
 
 ########################### A. Plot level data input, estimate pedNH
-dataNHpi<-dataAll[dataAll$Region=="GOM",] ## !!! RM SNE, 530 rows
-
+dataNHpi<-droplevels(dataAll[dataAll$Region=="GOM",]) ## !!! RM SNE, 530 rows
+  dim(dataNHpi)
 dataNHpi <- dataNHpi[order(dataNHpi$plotNo),]  #### Plots in alphabetic order
-dim(dataNHpi)
-str(dataNHpi)    
-dataNHpi<-dataNHpi[!dataNHpi$crossID=="Buffer",]  ## !!! RMed Buffer lines
+  dim(dataNHpi)
+  str(dataNHpi)    
 
-dataNHpi<-dataNHpi[!dataNHpi$PhotoScore==0,] ## !!! RM PhotoScore=0,  447 rows
-#dataNHpi<-dataNHpi[dataNHpi$PhotoScore>1,] ## !!! RM PhotoScore<=1
-dim(dataNHpi)
-colnames(dataNHpi)
-dataNHpi19<-dataNHpi[dataNHpi$Year==2019,] ## 2019 data   !!!!!!
-dataNHpi19_C<-dataNHpi19
-dataNHpi19_C<-dataNHpi19_C[order(dataNHpi19_C$plotNo),]  ## Order plotNo alphabetically
-
-
-dataNHpi<-dataNHpi19_C  ##!!!!!
 
 library(lme4)
 exptlSP <- as.character(dataNHpi$popChk) == "ES"
 dataNHpi$entry <- as.character(dataNHpi$popChk)
 dataNHpi$entry[exptlSP] <- as.character(dataNHpi$plotNo[exptlSP])
 dataNHpi$group <- as.factor(ifelse(exptlSP, 1, 0))
-print("Wet Weight Per Plot")
 
 library(lmerTest) # can give p-values
 
- for (col in c( "line", "block","popChk","group","entry")) 
+ for (col in c( "line", "block","popChk","group","entry","Year")) 
   dataNHpi[,col] <- factor(dataNHpi[,col])
 
-fitAug <- lmer(dryWgtPerM ~ popChk + line*block + (1|entry:group), data=dataNHpi)
-print(aov <- anova(fitAug))
+anova_fnc1<-function(Trait=dataNHpi$dryWgtPerM,data=dataNHpi){
+  
+    fitAug <- lmer(Trait ~ popChk + (1|line:block) + (1|entry:popChk)+Year, data=dataNHpi)
+    anovaF<- anova(fitAug)
+    anovaR <- ranova(fitAug)
+    
+    return(list(anovaF=anovaF,anovaR=anovaR))
+  # else if (UsepopChk=FALSE){
+  #   fitAug <- lmer(Trait ~  (1|line)+(1|block) + (1|entry:popChk)+Year, data=dataNHpi)
+  #   aov <- anova(fitAug)
+  # }
+
+}
+
+anova_fnc2<-function(Trait=dataNHpi$dryWgtPerM,data=dataNHpi){
+  fitAug <- lmer(Trait ~ popChk + line*block + (1|entry:popChk)+Year, data=dataNHpi)
+  anovaF<- anova(fitAug)
+  anovaR <- ranova(fitAug)
+  return(list(anovaF=anovaF,anovaR=anovaR))
+}
+
+traits<-c("dryWgtPerM","Ash","AshFDwPM","wetWgtPerM","percDryWgt")
+
+ANOVAResults1<-NULL
+ANOVAResults2<-NULL
+ANOVAResults3<-NULL
+ANOVAResults4<-NULL
+
+for (i in 1:length(traits)){
+  ANOVAResults1[[i]]<-anova_fnc1(Trait=dataNHpi[,traits[i]],data=dataNHpi)$anovaF
+  ANOVAResults2[[i]]<-anova_fnc2(Trait=dataNHpi[,traits[i]],data=dataNHpi)$anovaF
+  
+  ANOVAResults3[[i]]<-anova_fnc1(Trait=dataNHpi[,traits[i]],data=dataNHpi)$anovaR
+  ANOVAResults4[[i]]<-anova_fnc2(Trait=dataNHpi[,traits[i]],data=dataNHpi)$anovaR
+}
+
+names(ANOVAResults1)<-paste0(traits,"_lmerTest_fixed_fnc1")
+names(ANOVAResults2)<-paste0(traits,"_lmerTest_fixed_fnc2")
+names(ANOVAResults3)<-paste0(traits,"_lmerTest_Random_fnc1")
+names(ANOVAResults4)<-paste0(traits,"_lmerTest_Random_fnc2")
+  
+save(ANOVAResults1,ANOVAResults2,ANOVAResults3,ANOVAResults4,traits,file=paste0(datafdr,"ANONVA_Results_fnc1_and_2.Rdata"))
+
+anova_fnc1(Trait=log(dataNHpi$dryWgtPerM+1),data=dataNHpi) # Year *** / block P=0.01
+anova_fnc2(Trait=dataNHpi$Ash,data=dataNHpi)  # Year *** / blok P=0.02, popChk P=0.075
+anova_fnc1(Trait=dataNHpi$AshFDwPM,data=dataNHpi)  # Year not sig/ block P=0.07
+anova_fnc2(Trait=log(dataNHpi$wetWgtPerM+1),data=dataNHpi) # Year not sig/block P=0.012/ line:block P=0.08
+anova_fnc2(Trait=dataNHpi$percDryWgt,data=dataNHpi)  # Year ***
+anova_fnc2(Trait=dataNHpi$densityBlades,data=dataNHpi) # Year *** line P=0.099
+
+
+
+
+
+
+# Type III Analysis of Variance Table with Satterthwaite's method
+#          Sum Sq  Mean Sq NumDF  DenDF F value      Pr(>F)    
+# popChk 0.008405 0.002101     4 215.94    0.34      0.8508    
+# Year   0.142744 0.142744     1 247.83   23.10 0.000002667 ***
+
 #> anova(fitAug)
 #Type III Analysis of Variance Table with Satterthwaite's method
 #             Sum Sq   Mean Sq NumDF   DenDF F value Pr(>F)
