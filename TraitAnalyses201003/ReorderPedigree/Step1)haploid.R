@@ -261,13 +261,17 @@ save(outCovComb4_HapOrder,outCovComb4_Hapconden,file="outCovComb4_hap_Conden_011
 #####
 ### compare dip and hap outCovComb
 rm(list=ls())
-load(here("TraitAnalyses201003/ReorderPedigree","outCovComb_dip_0116_2021.Rdata"))
+# load(here("TraitAnalyses201003/ReorderPedigree","outCovComb_dip_0116_2021.Rdata"))
+load(here("TraitAnalyses201003/data","outCovComb_dip_0116_2021.Rdata"))
   outCovComb4_dipOrder[1:4,1:4]
   outCovComb4_dipOrder[103:106,103:106]
 hMat_dip<-outCovComb4_dipOrder
 
-load(here("TraitAnalyses201003/Making_haploid_CovComb","outCovComb4_hap_Conden_0116_2021.Rdata"))
-hMat_hap<-outCovComb4_HapOrder<-outCovComb4_Hapconden
+# load(here("TraitAnalyses201003/Making_haploid_CovComb","outCovComb4_hap_Conden_0116_2021.Rdata"))
+# hMat_hap<-outCovComb4_HapOrder<-outCovComb4_Hapconden
+
+load(here("TraitAnalyses201003/data","hMat_hap_0116_2021.Rdata")) # this outCovComb4_Hapconden=hMat_hap
+
 #load(paste0("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/hMat_PedNH_CCmat_fndrMrkData_Both_PhotoScore23_withSGP_866.rdata"))
 
 rownames(hMat_hap)<-rownames(hMat_dip)  # order of hMat_hap = biphasichapccMat=biphasicPedNH=hMat_dip

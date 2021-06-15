@@ -1,4 +1,5 @@
 ## Evaluating the distribution of data
+library(here)
 here()
 #here::i_am(here("TraitAnalyses201003/Code_10032020","Histogram_on_GEBVs_and_Ones_used_in_MiniCross.R"))
 
@@ -42,18 +43,22 @@ Plot_Cross_Link$Used_in_2020SPCross<-ifelse(Plot_Cross_Link$crossID%in%SP2019_pl
 Plot_Cross_Link$Used_in_2021miniCross<-ifelse(Plot_Cross_Link$crossID%in%MiniCross2019SPs,"y","no")
 
 ##### Find the BLUPs file,
-plotBLUPs<-read.csv(here("allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_0116_2021_hap.csv"),sep=",",header=T,row.names=1)
+
+datafdr<-here(here(),"TraitAnalyses201003/data/")
+#plotBLUPs<-read.csv(here("allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_0116_2021_hap.csv"),sep=",",header=T,row.names=1)
+plotBLUPs<-read.csv(paste0(datafdr,"allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_0315_2021_hap_NonUpateBladeDensity.csv"),sep=",",header=T,row.names=1)
+
   head(plotBLUPs)
 ##### Then plot out
-plotBLUPs$Isolate_Sorus<-vlookup(rownames(plotBLUPs),dict=Plot_Cross_Link,result_column = "Isolate_Sorus_2020_Need_Update",lookup_column = "Crosses")
-head(plotBLUPs)
+plotBLUPs$Isolate_Sorus<-expss::vlookup(rownames(plotBLUPs),dict=Plot_Cross_Link,result_column = "Isolate_Sorus_2020_Need_Update",lookup_column = "Crosses")
+  head(plotBLUPs)
 
-unique(plotBLUPs$Crossed2020)
-plotBLUPs$Crossed2020<-vlookup(rownames(plotBLUPs),dict=Plot_Cross_Link,result_column = "Used_in2020Cross",lookup_column ="Crosses" )  
-plotBLUPs$Crossed2021<-vlookup(rownames(plotBLUPs),dict=Plot_Cross_Link,result_column = "Used_in_2021miniCross",lookup_column ="Crosses" )
-plotBLUPs$Crossed2020_Update<-vlookup(rownames(plotBLUPs),dict=Plot_Cross_Link,result_column = "Used_in_2020SPCross",lookup_column ="Crosses" )
+  unique(plotBLUPs$Crossed2020_Update)
+plotBLUPs$Crossed2020<-expss::vlookup(rownames(plotBLUPs),dict=Plot_Cross_Link,result_column = "Used_in2020Cross",lookup_column ="Crosses" )  
+plotBLUPs$Crossed2021<-expss::vlookup(rownames(plotBLUPs),dict=Plot_Cross_Link,result_column = "Used_in_2021miniCross",lookup_column ="Crosses" )
+plotBLUPs$Crossed2020_Update<-expss::vlookup(rownames(plotBLUPs),dict=Plot_Cross_Link,result_column = "Used_in_2020SPCross",lookup_column ="Crosses" )
 
-## Change trait here
+## Change trait here !!!!!!!
 forPlot<-data.frame(Indiv=rownames(plotBLUPs),Trait=plotBLUPs$DWpM,Isolate_Sorus=plotBLUPs$Isolate_Sorus,Crossed2020=plotBLUPs$Crossed2020,Crossed2021=plotBLUPs$Crossed2021,Crossed2020_Update=plotBLUPs$Crossed2020_Update)
 
 ## Detect if it has "x"= SP plots
@@ -68,14 +73,13 @@ histo<-ggplot(forPlot,aes(x=Trait))+
 
   
 
-# its 2019_SP plot level GPs used for Plot Crossing in 2020 
 # segment_data = data.frame(
 #   x = c(forPlot$Trait[forPlot$Crossed2020=="y"]),
 #   xend = c(forPlot$Trait[forPlot$Crossed2020=="y"]), 
 #   y = rep(0,length(forPlot$Trait[forPlot$Crossed2020=="y"])),
 #   yend = rep(4, length(forPlot$Trait[forPlot$Crossed2020=="y"]))
 # )
-
+# its 2019_SP plot level GPs used for Plot Crossing in 2020 
 segment_data = data.frame(
   x = c(forPlot$Trait[forPlot$Crossed2020_Update=="y"]),
   xend = c(forPlot$Trait[forPlot$Crossed2020_Update=="y"]), 
@@ -106,14 +110,15 @@ sum(forPlot$Isolate_Sorus=="Yes") # data2  35
 sum(forPlot$Crossed2021=="y")  # data 3 25
 sum(forPlot$Crossed2020_Update=="y") # data  11
 
-histo +
-geom_segment(data=segment_data,aes(x = x, y = y, xend = xend, yend = yend),linetype="dashed",color="green")+
-geom_segment(data = segment_data2, aes(x = x, y = y, xend = xend, yend = yend),linetype="dashed",color="steelblue")+
-  geom_segment(data=segment_data3,aes(x = x, y = y, xend = xend, yend = yend),linetype="dashed",color="red")
-#+
-  # scale_color_manual(name = "Category",
-  #                    values = c( "Had sorus tissue in 2020" = "blue", "Used for Plot Crossing in 2020" = "red", "Used for Mini Crossing in 2021" = "green"),
-  #                    labels = c("Had sorus tissue in 2020", "Used for Plot Crossing in 2020", "Used for Mini Crossing in 2021"))
-  # 
-  # 
+colors <- c("Produced sorus tissue in Yr2019" = "green", "Produced sorus tissue in Yr2020" = "red")
 
+histo +
+geom_segment(data=segment_data,aes(x = x, y = y, xend = xend, yend = yend,color="green"),linetype="dashed",show.legend=TRUE)+
+geom_segment(data=segment_data3,aes(x = x, y = y, xend = xend, yend = yend,color="red"),linetype="dashed",show.legend=TRUE)+
+   scale_color_manual(name = "",
+                        values = c( "green", "red"),
+                        labels = c("Selected in Yr2019", "Selected in Yr2020"))
+  
+#!!! The color=() must be inside the aes() statement, otherwise, legend cannot be viewed
+
+#geom_segment(data = segment_data2, aes(x = x, y = y, xend = xend, yend = yend),linetype="dashed",color="steelblue")+

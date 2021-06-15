@@ -1,0 +1,6 @@
+"","bladeLength","bladeMaxWidth","bladeThickness","stipeDiameter","stipeLength"
+"bladeLength",1,-0.39138029804457,NA,NA,NA
+"bladeMaxWidth",-0.39138029804457,1,NA,NA,NA
+"bladeThickness",NA,NA,1,NA,NA
+"stipeDiameter",NA,NA,NA,1,0.0760553896637862
+"stipeLength",NA,NA,NA,0.0760553896637862,1

@@ -8,8 +8,6 @@ datafdr<-here("TraitAnalyses201003/data/")
 wd<-here("TraitAnalyses201003/UpdateAsh/") ## !!
 setwd(wd)
   getwd()
-  
-#here::i_am("Code_10032020/Step3_Cleaned_V2.R") 
   ls()
 
 library(rrBLUP)
@@ -31,6 +29,7 @@ library(rrBLUP)
 load(paste0(datafdr,"dataNHpi_withChk_3_sets_PhotoScore23_UpdateAsh_0309_2021.rdata"))
 load(paste0(datafdr,"dataNHim_withChk_3_sets_PhotoScore0123.rdata"))  
 
+### !!!!!!!!!! Here needs to run 3 times, each for each scenario
 ### !!!!Both
 dataNHpi<-dataNHpiBoth_C  
 dataNHim<-dataNHimboth_C
@@ -55,11 +54,29 @@ bothYr<-FALSE
 
 
 dataNHpi$densityBlades<-ifelse(dataNHpi$densityBlades==0,NA,dataNHpi$densityBlades)  # densityblades as 0 then NA
-
 dataNHpi$popChk <- ifelse(substr(dataNHpi$plotNo, 1, 1) == "Z", substr(dataNHpi$plotNo, 1, 2), "ES")  # Checks VS ES
 
 dataNHpi$withinLoc <- ifelse(as.vector(dataNHpi$femaParLoc) == as.vector(dataNHpi$maleParLoc), 1, 0) # WithinLoc is 1
 dataNHpi$development[dataNHpi$development=="#N/A"] <-NA
+
+
+# #### Update the Blade Density data, But the correlation between old and YL's new ones are 1
+# density<-read.csv(paste0(datafdr,"Allplotdata_03.08.2021_Density.csv"),sep=",",header=TRUE)
+# 
+# density<-density[,c("Plot.ID","Density..Blades.m.")]
+# density$crossID<-paste(str_split_fixed(density$Plot.ID,"-",3)[,1],str_split_fixed(density$Plot.ID,"-",3)[,2],paste0("S",str_split_fixed(density$Plot.ID,"-",3)[,3]),sep="-")
+# colnames(density)<-(c("PlotID","DensityUpdate","crossID"))
+# density$DensityOld<-expss::vlookup(density$crossID,dict=dataNHpi,result_column="densityBlades",lookup_column="crossID")
+# cor(density$DensityUpdate,density$DensityOld,use="complete") #1
+#   dim(density)
+#   head(density)
+#   tail(density)
+# dataNHpi$densityBladesUpdate<-expss::vlookup(dataNHpi$crossID,dict=density,lookup_column = "crossID",result_column = "DensityUpdate")  
+#   head(dataNHpi)
+# #Only update the 2019 season density blades
+# dataNHpi$densityBladesUpdate2<-ifelse(dataNHpi$Year=="2019"&dataNHpi$popChk=="ES",dataNHpi$densityBladesUpdate,dataNHpi$densityBlades)  
+
+
 
 # Experimental design variables should be factors
 for (col in c( "Year", "plotNo","Region","GrowDays","femaPar", "femaParLoc", "malePar", "maleParLoc", "block", "line","popChk")) 
@@ -99,25 +116,29 @@ dataNHpi_RMchk$Crosses<-as.factor(as.character(dataNHpi_RMchk$Crosses)) # This R
 nrowplot<-nrow(dataNHpi_RMchk)
 nrowchk<-nrow(dataNHpi) - nrowplot
 
-
 ##{{}}
 ##{{}}
 #Dip
-load(here("TraitAnalyses201003/data","outCovComb_dip_0116_2021.Rdata"))
-  outCovComb<-outCovComb4_dipOrder
-diphap<-"dip"
+# load(here("TraitAnalyses201003/data","outCovComb_dip_0116_2021.Rdata"))
+#   outCovComb<-outCovComb4_dipOrder
+# diphap<-"dip"
+##{}
 
-
-# #Hap
+# # #Hap
 # load(here("TraitAnalyses201003/data","hMat_hap_0116_2021.Rdata"))
 # #load(here("TraitAnalyses201003/Making_haploid_CovComb","outCovComb4_hap_Conden_0116_2021.Rdata")) # this outCovComb4_Hapconden=hMat_hap
 # outCovComb<-hMat_hap
 # diphap<-"hap"
-## {}
-## {}
+# # {}
+# ## {}
   
+## Mixed ploidy
+load(here("TraitAnalyses201003/data","outCovComb4_Mix_Conden_0527_2021.Rdata"))
+outCovComb<-outCovComb4_MixOrder  
   dim(outCovComb)
   outCovComb[1:4,1:4]
+diphap<-"MixedPloidy"  
+  
 phenoNamesFact<-factor(dataNHpi_RMchk$Crosses,levels=rownames(outCovComb))   #colnames are sorted alphabetically for the outCovComb 
 msZ0<-model.matrix(~-1 +phenoNamesFact,data=dataNHpi_RMchk)  
 
@@ -130,22 +151,28 @@ chkSpMat<-matrix(0, nrowchk, nrow(outCovComb))
 #  
 msZ<-rbind(msZ0,chkSpMat)
   dim(msZ)   # 283 x 866   # 2019, 139 x 866  # 2020, 144x866
-
-  
+                  # chkSpMat rownames are empty???? IT IS OK, dataNHpi is ordered that the checks are in the bottom
+ 
 # Calculate heritability from the mixed.solve output
 heritability <- function(msOut){
-  return(msOut$Vu / (msOut$Vu + msOut$Ve))
+  return(2*msOut$Vu / (2*msOut$Vu + msOut$Ve))
 }
 
 Vu<-function(msOut){
- msOut$Vu
+ 2*msOut$Vu
 }
 
 ErrVar<-function(msOut){
  msOut$Ve
 }
 
-#write.csv(dataNHpi,paste0("dataNHpi_Last_Used_in_Model_",yr,".csv"))
+  # sum(rownames(msX1)==rownames(dataNHpi))==nrow(dataNHpi) #283/ 139
+  # sum(rownames(msZ)[1:250]==rownames(msX)[1:250]) #250, the other 33 are checks
+  # 
+  # msZcolname<-str_replace(colnames(msZ),"phenoNamesFact","")
+  # sum(msZcolname==rownames(hMat))  # !!! Must be 866
+
+write.csv(dataNHpi,paste0(datafdr,"dataNHpi_Last_Used_in_Model_",yr,"_04202021.csv"))
 
 ########### 6. use hMat as the relationship matrx
 #### If or not chks could be included, not for ash, if this is within year or between year analysis
@@ -183,6 +210,7 @@ if (UseChk==FALSE){
     msX <- model.matrix( ~ line+block+popChk, data=dataNHpi)  
     msX <- msX[, apply(msX, 2, function(v) !all(v == 0))]
   }
+  
   library(Matrix)
    print(rankMatrix(msX))
    print(qr(msX)$rank)  #31
@@ -262,16 +290,18 @@ H2Table<-rbind(h2hMat,Vus,ErrVars)
 write.csv(H2Table,paste0(datafdr,"H2_Plot_Level_",yr,"years","_usingMatrix_",diphap,".csv"))
   
 
-allBLUPs <- cbind(msOutAshFDwPM$u,msOutAshOnly$u,msOutDWPMh$u,msOutWWPh$u,  msOutPDWh$u,msOutDBh$u)
-  dim(allBLUPs)
-colnames(allBLUPs) <- c("AshFDwPM","AshOnly","DWpM","WWP","PDW","BD")
-  head(allBLUPs)
-#write.csv(allBLUPs,paste0(wd,"allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_0309_2021_dip.csv"))  
-write.csv(allBLUPs,paste0(datafdr,"allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_","0315_2021_",diphap,".csv"))  
+allBLUPsPlot <- cbind(msOutAshFDwPM$u,msOutAshOnly$u,msOutDWPMh$u,msOutWWPh$u,  msOutPDWh$u,msOutDBh$u)
+  dim(allBLUPsPlot)
+colnames(allBLUPsPlot) <- c("AshFDwPM","AshOnly","DWpM","WWP","PDW","BD")
+  head(allBLUPsPlot)
+#write.csv(allBLUPsPlot,paste0(wd,"allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_0309_2021_dip.csv"))  
+write.csv(allBLUPsPlot,paste0(datafdr,"allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_","0527_2021_",diphap,"_",yr,".csv"))  
 
 
 ############# Individual BLUPs
 ######### Use these from plot level info
+BothYear<-bothYr
+
 if (BothYear==TRUE){
   ###!!!!!!!!!!!!!!!!!! Both Years !!!!!!!!!!!
   msX <- model.matrix( ~ line%in%Year+block%in%Year+Year+popChk, data=dataNHpi)  ### !!!! has popChk for the traits
@@ -339,15 +369,16 @@ names(h2hMatim) <- c("bladeLength", "bladeMaxWidth",  "bladeThickness", "stipeLe
   names(h2hMat) 
 allh2h<-c(h2hMat,h2hMatim)
   allh2h
-write.csv(allh2h,paste0(datafdr,"H2_Individual_Level_",yr,"years_usingMatrix_",diphap,".csv"))
+write.csv(allh2h,paste0(datafdr,"H2_Individual_Level_",yr,"years_usingMatrix_",diphap,"_05272021.csv"))
 
 allBLUPs_addIndiv <- cbind(msOutAshFDwPM$u,msOutAshOnly$u,msOutDWPMh$u,msOutWWPh$u,  msOutPDWh$u, msOutDBh$u, msOutBLh$u, msOutBMWh$u,  msOutBTh$u, msOutSLh$u, msOutSDh$u)
   head(allBLUPs_addIndiv)
 colnames(allBLUPs_addIndiv) <- c("AshFDwPM","AshOnly","DWpM","WWP",  "PDW", "BDns", "BLen", "BMax",  "BThk", "SLen", "SDia")
-write.csv(allBLUPs_addIndiv,paste0(datafdr,"allBLUPs_Plots+Individuals_withSGP_866_AddfndrsMrkData_","0315_2021_",diphap,".csv"))
+write.csv(allBLUPs_addIndiv,paste0(datafdr,"allBLUPs_Plots+Individuals_withSGP_866_AddfndrsMrkData_","0420_2021_",diphap,"_",yr,"_05272021.csv"))
 
 Y<-dataNHpi
-plot<-ggplot(data=Y,aes(densityBlades,Year))+
+library(ggplot2)
+plot<-ggplot(data=Y,aes(wetWgtPlot,Year))+
   geom_point(aes(color=as.factor(Year)))+ 
   geom_line(aes(group=as.factor(Crosses)))
 print(plot)
@@ -385,69 +416,89 @@ print(plot)
 # H2all<-rbind(Herit,Vus,ErrVars)
 # colnames(H2all)<-traitsherit2
 #   H2all
-# 
-#   H2all
 
 
-
-
-
-########### Plotting BVs correlation, and BVs by generations
+########### FIGURE 3 Plotting BVs correlation, and BVs by generations
+library(here)
+here()
+datafdr<-here("TraitAnalyses201003/data/")
+wd<-here("TraitAnalyses201003/UpdateAsh/")
+yr<-"Both"
+diphap<-"MixedPloidy"
+allBLUPs<-read.csv(paste0(datafdr,"allBLUPs_Plots+Individuals_withSGP_866_AddfndrsMrkData_","0420_2021_",diphap,"_",yr,".csv"),sep=",",header=TRUE,row.names=1)
+  head(allBLUPs)
 #rownames(allBLUPs) is the same as that in u, and hMat
 
-allBLUPs <- cbind(msOutAshFDwPM$u,msOutAshOnly$u,msOutDWPMh$u,msOutWWPh$u,  msOutPDWh$u, msOutDBh$u, msOutBLh$u, msOutBMWh$u,  msOutBTh$u, msOutSLh$u, msOutSDh$u)
-colnames(allBLUPs) <- c("AshFDwPM","AshOnly","DWpM","WWP",  "PDW", "BDns", "BLen", "BMax",  "BThk", "SLen", "SDia")
-
-
-### Combining all the GPs that have the GEBV
+### 1. Take out SProg_GPs
 SProg_GPs<-allBLUPs[grep("UCONN-S",rownames(allBLUPs)),]  ### Grep only the SProg_GPs
-allBLUPs0<-allBLUPs
+  allBLUPs0<-allBLUPs
 
-### allBLUPs would remove all the SP_GP plots
+### allBLUPs would remove all the SProg_GP plots
 allBLUPs<-allBLUPs[!rownames(allBLUPs)%in%rownames(SProg_GPs),]
 ###
   dim(allBLUPs)
   dim(allBLUPs0)
-sampledSP <- which(nchar(rownames(allBLUPs)) < 11)  # The fndr SP is max of 10 characters
+sampledSP <- which(nchar(rownames(allBLUPs)) < 11)  # 2.The fndr SP is max of 10 characters (104)
+
 releaseGP <- nchar(rownames(allBLUPs))   
-releaseGP <- which(10 < releaseGP & releaseGP <=15)  #FG and MG from fndr SP is max of 14 characters
-progenySP <- which(nchar(rownames(allBLUPs)) > 15)   #the Cross name is larger than 15 characters
+releaseGP <- which(10 < releaseGP & releaseGP <=15)  #3. FG and MG from fndr SP is max of 14 characters
+
+progenySP <- which(nchar(rownames(allBLUPs)) > 15)   #4. the Cross name is larger than 15 characters
 
 fndNames <- rownames(allBLUPs)[sampledSP]
-hasDesc <- sapply(fndNames, function(n) grep(n, rownames(allBLUPs)[progenySP]))
-
-nDesc <- sapply(hasDesc, length)
+hasDesc <- sapply(fndNames, function(n) grep(n, rownames(allBLUPs)[progenySP])) # grep the fndr pattern in progenySP string
+nDesc <- sapply(hasDesc, length)  #sapply: function applied to each element of a vector
   nDesc
 
-GP_allBLUPs<-as.data.frame(rbind(allBLUPs[releaseGP,],SProg_GPs)) ## !!! Added the SProg_GPs  
+## !!! Adding back the SProg_GPs 
+GP_allBLUPs<-as.data.frame(rbind(allBLUPs[releaseGP,],SProg_GPs))  
   dim(GP_allBLUPs)
 #GP_allBLUPs<-as.data.frame(rbind(allBLUPs[releaseGP,]))
 SP_allBLUPs<-as.data.frame(allBLUPs[progenySP,])
-SP_allBLUPs<-SP_allBLUPs[order(-SP_allBLUPs$AshFDwPM),]
-
+SP_allBLUPs<-SP_allBLUPs[order(-SP_allBLUPs$DWpM),]  ###### Trait !!!!!!
+  dim(SP_allBLUPs)
+  head(SP_allBLUPs)
 nrow(GP_allBLUPs)+length(fndNames)+nrow(SP_allBLUPs)
 #517(=439 GPs_from_fndr+78 SProg_GPs) +104+ 245
 
-pdf(paste0("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/","CorrPlot_SPplots",yr,"_PhotoScore23_WithHaploid.pdf"))
+pdf(paste0("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/","CorrPlot_SPplots",yr,"_PhotoScore23_With_",diphap,"_0422.pdf"))
 corrplot::corrplot.mixed(cor(SP_allBLUPs), diag="n", tl.cex=0.6, tl.col=1)
 dev.off()
 
 
-traitname<-"AshFDwPM" # !!!!!!!!!!
+traitname<-"DWpM" # !!!!!!!!!!
 # Different colors for fndr, GP, progeny SP crosses
-colSPGP <- c(rep("black", length(sampledSP)), rep("dark green", length(releaseGP)), rep("dark red", length(progenySP)),rep("red",nrow(SProg_GPs)))
-colSPGP[which(nDesc == 0)] <- "grey"
+colSPGP <- c(rep("Founder SPs", length(sampledSP)), rep("GPs from Founder", length(releaseGP)), rep("Farm SPs", length(progenySP)),rep("GPs from Farm SPs",nrow(SProg_GPs)))
+colSPGP[which(nDesc == 0)] <- "Founder SPs without progeny"
 
-OrderedBLUPs<-rbind(allBLUPs[sampledSP,],allBLUPs[releaseGP,],allBLUPs[progenySP,],SProg_GPs)
+OrderedBLUPs<-as.data.frame(rbind(allBLUPs[sampledSP,],allBLUPs[releaseGP,]/2,allBLUPs[progenySP,],SProg_GPs/2))
   dim(OrderedBLUPs)
   str(colSPGP)
-#### Plot out each generation of BLUPs
-pdf(paste0("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/",traitname,"vsIndividual",yr,"_PhotoScore23_withHaploid.pdf"))
-plot(OrderedBLUPs[,colnames(OrderedBLUPs)%in%traitname], pch=16, col=colSPGP, xlab="Individual number", ylab=traitname) # !!The second col is DWpM
-dev.off()
+OrderedBLUPs$colSPGP<-colSPGP  
+OrderedBLUPs$Trait<-OrderedBLUPs[,traitname]  
 
 
-write.csv(OrderedBLUPs,paste0("allBLUPsDF_Ordred_",yr,"_Plots_WithHaploid.csv"))
+##### Need to add and find out which SPs is from 2019 or 2020
+OrderedBLUPs$Year<-expss::vlookup(OrderedBLUPS)
+#### FIGURE 3 !!!!!!! Plot out each generation of BLUPs
+pdf(paste0("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/data/",traitname,"vs Individual",yr,"_PhotoScore23_with_",diphap,"_0331_Figure3.pdf"))
+#plot(OrderedBLUPs[,colnames(OrderedBLUPs)%in%traitname], pch=16, col=colSPGP, xlab="Individual number", ylab=traitname) # !!The second col is DWpM
+
+ggplot(data=OrderedBLUPs,mapping=aes(x=1:866,y=Trait,color=colSPGP))+
+         geom_point()+
+    scale_color_manual(name="Category",
+                       values=c("Founder SPs"="black","Founder SPs without progeny"="grey","GPs from Founder"="dark green","Farm SPs"="dark red","GPs from Farm SPs"="red"))+
+  labs(x="Individual",y="Dry Weight per Meter (kg/m)")
+
+dev.off()  
+  
+# values=c("black","grey","dark green","dark red","red"),
+#labels=c("Founder SPs","Founder SPs not crossed","GPs from Founder","Farm SPs","GPs from Farm SPs")
+
+
+
+
+write.csv(OrderedBLUPs,paste0("allBLUPsDF_Ordred_",yr,"_Plots_Indiv_With",diphap,".csv"))
 
 # rnPos <- rownames(allBLUPs)[intersect(which(nDesc == 0), which(allBLUPs[,colnames(allBLUPs)%in%traitname]>0))] #!! The second col is DWpM
 # rnNeg <- rownames(allBLUPs)[intersect(which(nDesc == 0), which(allBLUPs[,colnames(allBLUPs)%in%traitname]<0))] #!! The second col is DWpM

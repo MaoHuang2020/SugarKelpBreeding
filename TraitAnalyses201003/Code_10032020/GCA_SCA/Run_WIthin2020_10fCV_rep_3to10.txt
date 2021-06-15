@@ -1,0 +1,42 @@
+Error in readRDS(mapfile) : error reading from connection
+In addition: Warning message:
+In readRDS(mapfile) : error reading the file
+Error: package or namespace load failed for 'methods':
+ unable to load R code in package 'methods'
+Error in readRDS(mapfile) : error reading from connection
+In addition: Warning messages:
+1: package "methods" in options("defaultPackages") was not found 
+2: In readRDS(mapfile) : error reading the file
+Error: package or namespace load failed for 'methods':
+ unable to load R code in package 'methods'
+During startup - Warning message:
+package 'methods' in options("defaultPackages") was not found 
+            crossID                       Crosses        femaPar femaParLoc
+490   SL18-UCONN-S1 SA18-CB-10-FG1xSL18-SF-19-MG2 SA18-CB-10-FG1         CB
+475  SL18-UCONN-S10  SL18-LD-10-FG1xSL18-OI-4-MG1 SL18-LD-10-FG1         LD
+357 SL18-UCONN-S100  SL18-NL-6-FG1xSL18-OI-11-MG2  SL18-NL-6-FG1         NL
+497 SL18-UCONN-S101  SL18-NL-6-FG1xSL18-OI-14-MG2  SL18-NL-6-FG1         NL
+509 SL18-UCONN-S102  SL18-NL-6-FG1xSL18-OI-15-MG1  SL18-NL-6-FG1         NL
+484 SL18-UCONN-S103  SL18-NL-6-FG1xSL18-OI-16-MG1  SL18-NL-6-FG1         NL
+           malePar maleParLoc   plotNo Region popChk line block Year PhotoScore
+490 SL18-SF-19-MG2         SF   2019_1    GOM     ES    2     7 2019          3
+475  SL18-OI-4-MG1         OI  2019_10    GOM     ES    3     9 2019          3
+357 SL18-OI-11-MG2         OI 2019_100    GOM     ES    4     8 2019          2
+497 SL18-OI-14-MG2         OI 2019_101    GOM     ES    1     2 2019          3
+509 SL18-OI-15-MG1         OI 2019_102    GOM     ES    1     9 2019          3
+484 SL18-OI-16-MG1         OI 2019_103    GOM     ES    1     5 2019          3
+    dryWgtPerM AshFreedryWgtPerM
+490       0.42         0.2217464
+475       0.23         0.1274929
+357       0.11                NA
+497       0.48         0.2519367
+509       0.47         0.2310330
+484       0.34         0.1849843
+ [1] "wetWgtPerM"     "percDryWgt"     "dryWgtPerM"     "Ash"           
+ [5] "AshFDwPM"       "densityBlades"  "bladeLength"    "bladeMaxWidth" 
+ [9] "bladeThickness" "stipeLength"    "stipeDiameter" 
+Error in readRDS(mapfile) : error reading from connection
+In addition: Warning message:
+In readRDS(mapfile) : error reading the file
+Error: unable to load R code in package 'methods'
+Execution halted
