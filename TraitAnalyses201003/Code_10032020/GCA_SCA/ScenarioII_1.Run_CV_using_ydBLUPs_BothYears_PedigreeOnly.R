@@ -1,10 +1,16 @@
-#Run_CV_using_yBLUEs as predicted y. Work with 250 plots only
-#Both Years !!
+# Run Only Once
+# Generate GCA and SCA within Both Years'
+# Generate GCA and SCA var within 2019, then within 2020
+
+
+######## Run GS CV Both Years !!
 rm(list=ls())
+library(BGLR)
 
-WD<-"/local/workdir/mh865/GCA_SCA/"  # run in terminal
+WD<-"/local/workdir/mh865/GCA_SCA/PedigreeOnly_GCA_SCA/"  # run in terminal
+datafdr<-paste0(WD,"data/")
 
-load(paste0(WD,"OneTime1920/data/","dataNHpi_withChk_3_sets_PhotoScore23.rdata"))   ## Plot
+load(paste0(datafdr,"dataNHpi_withChk_3_sets_PhotoScore23.rdata"))   ## Plot
 #load("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/dataNHim_withChk_3_sets_PhotoScore0123.rdata")  ## Indi
 ####
 Y1<-dataNHpiBoth_C
@@ -14,47 +20,9 @@ Y2<-droplevels(Y1[,colKeep])
 Y<-Y2 # Both Years
 Y<-droplevels(Y[Y$popChk=="ES",])
 
+mm.file<- paste0(datafdr,"A.csv")          # path to covariates file
 
-########### Run only Once !!!!!!!!!To get the GCA and SCA components
-load(paste0("/local/workdir/mh865/outCovComb/outCovComb4_Mix_Conden_0527_2021.Rdata"))
-
-mm.file<- paste0(WD,"OneTime1920/data/","A.csv")          # path to covariates file
-
-## This is to only get the calc GCA and SCA functions
-source(paste0(WD,"OneTime1920/code/","BGLR_functions_noFMLoc.R")) # !!!terminal
-
-#the P1 column. column in phenotype file that gives the IDs that link observations to covariates or grouping factor
-CalGCA_noChk(Y=Y,mm.file=mm.file,colIDy = which(colnames(Y)=="femaPar"),colNam = "P1",savefiledir = "OneTime1920/GP1/250Individual/")
-CalGCA_noChk(Y=Y,mm.file=mm.file,colIDy = which(colnames(Y)=="malePar"),colNam = "P2",savefiledir = "OneTime1920/GP2/250Individual/")
-
-CalSCA(G1.file=paste0(WD,"OneTime1920/GP1/250Individual/","G.rda"),
-       G2.file=paste0(WD,"OneTime1920/GP2/250Individual/","G.rda"),
-       savefileDir="OneTime1920/GP1P2/250Individual/")
-
-
-############# Run it only once
-
-#write.csv(outCovComb4_dipOrder,here("OneTime1920/data","A.csv"))
-# mm.file<- paste0(WD,"OneTime1920/data/","A.csv")          # path to covariates file
-
-### This is to only get the calc GCA and SCA functions
-# source(paste0(WD,"OneTime1920/code/","BGLR_functions_noFMLoc.R")) # !!!terminal
-
-# # #### Run it once
-#  sampleCV<-matrix(nrow=nrow(Y),ncol=500)
-#   for (n in 1:500){
-#     sets<-rep(1:10,25)  #250 ES ones
-#     sampleCV[,n]<-sets[order(runif(nrow(Y)))]
-#   }
-#  save(sampleCV,file="sampleCV_250Indiv_0527_2021.Rdata")
-# 
-# #  ###### One Time
-
-
-
-# list(~factor(femaParLoc)+factor(maleParLoc),data=Y,model="BRR"),
-
-Inputfiledir<-c("OneTime1920/GP1/250Individual/","OneTime1920/GP2/250Individual/","OneTime1920/GP1P2/250Individual/") 
+Inputfiledir<-c("OneTime1920/GP1/","OneTime1920/GP2/","OneTime1920/GP1P2/") 
 
 load(paste0(WD,Inputfiledir[1],"EVD.rda"))  
 EVD1<-EVD
@@ -72,7 +40,7 @@ ETA<-list(
 )
 
 #####!!!
-datafdr<-paste0(WD,"OneTime1920/data/")
+
 
 load(paste0(datafdr,"Deregressed_BLUPs_ESplots_plot_Individuals_level_overTwoYears_AddBD.Rdata")) ##!!!
 rownames(Both_dBLUPs)<-Both_dBLUPs$Row.names
@@ -84,7 +52,7 @@ CrossBLUE<-Both_dBLUPs ##!!!
 
 
   
-load(paste0(WD,"OneTime1920/Alldata_CV_output/sampleCV_250Indiv_0303_2021.Rdata"))
+load(paste0("/local/workdir/mh865/GCA_SCA/OneTime1920/data/sampleCV_250Indiv_0303_2021.Rdata"))
 
 sampleCV<-sampleCV
 folds   <- 1:10 
@@ -160,8 +128,8 @@ cor_std<-rbind(cormean,stderr)
 rownames(cor_std)<-c("corMean","StdErr")
 colnames(cor_std)<-traits
 
-write.csv(cor_std,paste0(paste0("cor_CV_no_Loc_BothYears_ydrBLUPs_data_",length(traits),"Traits_Mean_05272021.csv")))
-write.csv(cor,paste0("cor_CV_no_Loc_BothYears_ydrBLUPs_data_",length(traits),"Traits_05272021.csv"))
+write.csv(cor_std,paste0(paste0(WD,"OneTime1920/Alldata_CV_output/","cor_CV_no_Loc_BothYears_ydrBLUPs_data_",length(traits),"Traits_Mean_05272021.csv")))
+write.csv(cor,paste0(WD,"OneTime1920/Alldata_CV_output/","cor_CV_no_Loc_BothYears_ydrBLUPs_data_",length(traits),"Traits_05272021.csv"))
 
 
 

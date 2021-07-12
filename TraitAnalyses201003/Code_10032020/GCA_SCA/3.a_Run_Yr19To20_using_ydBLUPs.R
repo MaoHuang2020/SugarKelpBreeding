@@ -13,12 +13,6 @@ Y<-Y2 # Both Years
 Y<-droplevels(Y[Y$popChk=="ES",])
 
 
-#plot<-ggplot(data=Y,aes(BLUE_Trait,Year))+
-#  geom_point(aes(color=as.factor(Year)))+ 
-#  geom_line(aes(group=as.factor(Crosses)))
-#print(plot)
-
-
 Inputfiledir<-c("OneTime1920/GP1/250Individual/","OneTime1920/GP2/250Individual/","OneTime1920/GP1P2/250Individual/") 
 head(Y)
 dim(Y)
@@ -140,8 +134,8 @@ rownames(cor_std)<-c("corMean","StdErr")
 colnames(cor_std)<-traits
 
 
-write.csv(cor,paste0("cor_",pop,"_",length(traits),"_traits_","_using_250ES_ydrBLUP_NoLoc_05272021.csv"))
-write.csv(cor_std,paste0("cor_",pop,"_",length(traits),"_traits_","_using_250ES_ydrBLUP_NoLoc_Mean_05272021.csv"))
+write.csv(cor,paste0(WD,"OneTime1920/",pop,"_output/","cor_",pop,"_",length(traits),"_traits_","_using_250ES_ydrBLUP_NoLoc_05272021.csv"))
+write.csv(cor_std,paste0(WD,"OneTime1920/",pop,"_output/","cor_",pop,"_",length(traits),"_traits_","_using_250ES_ydrBLUP_NoLoc_Mean_05272021.csv"))
 
 
 

@@ -11,30 +11,6 @@ Y<-Y2 # Both Years
 Y<-droplevels(Y[Y$popChk=="ES",])
 
 
-#plot<-ggplot(data=Y,aes(BLUE_Trait,Year))+
-#  geom_point(aes(color=as.factor(Year)))+ 
-#  geom_line(aes(group=as.factor(Crosses)))
-#print(plot)
-
-### Run it only once
-### This is to only get the calc GCA and SCA functions
-#source(paste0(WD,"OneTime1920/code/","BGLR_functions_noFMLoc.R")) # !!!terminal
-
-### Write and Load the A matrix
-#load(paste0(WD,"OneTime1920/data/","outCovComb4_Mix_Conden_0527_2021.Rdata"))
-#write.csv(outCovComb4_dipOrder,here("OneTime1920/data","A.csv"))
-#mm.file<- paste0(WD,"OneTime1920/data/","A.csv")          # path to covariates file
-
-# # #the P1 column. column in phenotype file that gives the IDs that link observations to covariates or grouping factor
-# CalGCA_noChk(Y=Y,mm.file=mm.file,colIDy = 3,colNam = "P1",savefiledir = "OneTime1920/GP1/250Individual/") 
-# CalGCA_noChk(Y=Y,mm.file=mm.file,colIDy = 5,colNam = "P2",savefiledir = "OneTime1920/GP2/250Individual/") 
-# # 
-#  CalSCA(G1.file=paste0(WD,"OneTime1920/GP1/250Individual/","G.rda"),
-#         G2.file=paste0(WD,"OneTime1920/GP2/250Individual/","G.rda"),
-#         savefileDir="OneTime1920/GP1P2/250Individual/")
-# # ############# Run it only once
-
-
 Inputfiledir<-c("OneTime1920/GP1/250Individual/","OneTime1920/GP2/250Individual/","OneTime1920/GP1P2/250Individual/") 
   head(Y)
   dim(Y)
@@ -157,8 +133,8 @@ cor_std<-rbind(cormean,stderr)
 rownames(cor_std)<-c("corMean","StdErr")
 colnames(cor_std)<-traits
 
-write.csv(cor,paste0("cor_",pop,"_",length(traits),"_traits_","_using_250ES_ydrBLUP_NoLoc_05272020.csv"))
-write.csv(cor_std,paste0("cor_",pop,"_",length(traits),"_traits_","_using_250ES_ydrBLUP_NoLoc_Mean_05272020.csv"))
+write.csv(cor,paste0(WD,"OneTime1920/",pop,"_output/","cor_",pop,"_",length(traits),"_traits_","_using_250ES_ydrBLUP_NoLoc_05272020.csv"))
+write.csv(cor_std,paste0(WD,"OneTime1920/",pop,"_output/","cor_",pop,"_",length(traits),"_traits_","_using_250ES_ydrBLUP_NoLoc_Mean_05272020.csv"))
 
 
 

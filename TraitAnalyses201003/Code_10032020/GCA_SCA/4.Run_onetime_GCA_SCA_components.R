@@ -106,10 +106,13 @@ corAll[[j]]<-cor
 # colnames(cor_std)<-traits
 
 
-write.csv(cor,paste0("Cor_predictItself_Alldata_",length(traits),"traits.csv")) 
-write.csv(colMeans(cor),paste0("Cor_predictItself_Alldata_",length(traits),"traits_Mean.csv")) 
+write.csv(cor,paste0(WD,"OneTime1920/Alldata_output/","Cor_predictItself_Alldata_",length(traits),"traits.csv")) 
+write.csv(colMeans(cor),paste0(WD,"OneTime1920/Alldata_output/","Cor_predictItself_Alldata_",length(traits),"traits_Mean.csv")) 
 
 ####!!! AddBD
+
+
+
 
 
 
@@ -231,40 +234,40 @@ identical(rownames(Fbig),rownames(Mbig))
 FMcompare<-cbind(Fbig,Mbig)
 colnames(FMcompare)<-c("GCAF>M %","GCAM>F %")
 
-write.csv(FMcompare,"GCA_varcomp_FM_compare%.csv")
+write.csv(FMcompare,paste0(WD,"OneTime1920/Alldata_output/","GCA_varcomp_FM_compare%.csv"))
 
 
 
 
 
-
-#### 4.FUNCTION 
-yHatVarMean_noloc<-function(filedir,vGCA1=1,vGCA2=2,vSCA=3,filename="OnetimeAll_rep1"){
-  load(paste0(WD,filedir,"fm.rda")) 
-  fm<-fm
-  varfm<-c(fm$varE,fm$ETA[[vGCA1]]$varU,fm$ETA[[vGCA2]]$varU,fm$ETA[[vSCA]]$varU) # varcomp output by fm
-  
-  varE<-scan(paste0(WD,filedir,filename,"varE.dat"))
-  # varB<-scan(paste0(WD,filedir,filename,"ETA_",vB,"_varB.dat"))
-  varU1<-scan(paste0(WD,filedir,filename,"ETA_",vGCA1,"_varU.dat"))
-  varU2<-scan(paste0(WD,filedir,filename,"ETA_",vGCA2,"_varU.dat"))
-  varU3<-scan(paste0(WD,filedir,filename,"ETA_",vSCA,"_varU.dat"))
-  
-  # plot(varU3,type='o',col=2,cex=.5)
-  #### Save the plot!!!!!
-  pdf(paste0(WD,filedir,"varE_varGCA1_2_SCA_OnetimeAll.pdf"))
-  par(mfrow=c(2,2))
-  plot(varE,type='o',col=2,cex=.5)
-  plot(varU1,type='o',col=1,cex=.5)
-  plot(varU2,type='o',col=1,cex=.5)
-  plot(varU3,type='o',col=1,cex=.5)
-  dev.off()
-  
-  varMedian<-c(median(varE),median(varU1),median(varU2),median(varU3))
-  varMean<-c(mean(varE),mean(varU1),mean(varU2),mean(varU3)) #calculated varcomp by hand
-  names(varMean)<-c("varE","varGCA1","varGCA2","varSCA")
-  
-  varMean<-rbind(varMean,varfm)     
-  write.csv(varMean,paste0(WD,filedir,filename,"_varcomp.csv"))
-  return(list(varMean=varMean))
-}
+# 
+# #### 4.FUNCTION 
+# yHatVarMean_noloc<-function(filedir,vGCA1=1,vGCA2=2,vSCA=3,filename="OnetimeAll_rep1"){
+#   load(paste0(WD,filedir,"fm.rda")) 
+#   fm<-fm
+#   varfm<-c(fm$varE,fm$ETA[[vGCA1]]$varU,fm$ETA[[vGCA2]]$varU,fm$ETA[[vSCA]]$varU) # varcomp output by fm
+#   
+#   varE<-scan(paste0(WD,filedir,filename,"varE.dat"))
+#   # varB<-scan(paste0(WD,filedir,filename,"ETA_",vB,"_varB.dat"))
+#   varU1<-scan(paste0(WD,filedir,filename,"ETA_",vGCA1,"_varU.dat"))
+#   varU2<-scan(paste0(WD,filedir,filename,"ETA_",vGCA2,"_varU.dat"))
+#   varU3<-scan(paste0(WD,filedir,filename,"ETA_",vSCA,"_varU.dat"))
+#   
+#   # plot(varU3,type='o',col=2,cex=.5)
+#   #### Save the plot!!!!!
+#   pdf(paste0(WD,filedir,"varE_varGCA1_2_SCA_OnetimeAll.pdf"))
+#   par(mfrow=c(2,2))
+#   plot(varE,type='o',col=2,cex=.5)
+#   plot(varU1,type='o',col=1,cex=.5)
+#   plot(varU2,type='o',col=1,cex=.5)
+#   plot(varU3,type='o',col=1,cex=.5)
+#   dev.off()
+#   
+#   varMedian<-c(median(varE),median(varU1),median(varU2),median(varU3))
+#   varMean<-c(mean(varE),mean(varU1),mean(varU2),mean(varU3)) #calculated varcomp by hand
+#   names(varMean)<-c("varE","varGCA1","varGCA2","varSCA")
+#   
+#   varMean<-rbind(varMean,varfm)     
+#   write.csv(varMean,paste0(WD,filedir,filename,"_varcomp.csv"))
+#   return(list(varMean=varMean))
+# }
