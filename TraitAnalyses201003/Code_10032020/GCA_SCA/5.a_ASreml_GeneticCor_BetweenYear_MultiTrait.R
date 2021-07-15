@@ -5,46 +5,79 @@
 rm(list=ls())
 #WD<-"/Users/maohuang/Desktop/Kelp/GCA_SCA/" # local
 #datafdr<-"/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/data/"
+datafdr<-paste0("/Users/maohuang/Desktop/Kelp/Simulation_Study/SugarKelpBreeding/TraitAnalyses201003/data/")
 
 WD<-"/local/workdir/mh865/GCA_SCA/"
-datafdr<-paste0(WD,"OneTime1920/data/")
+datafdr<-"/local/workdir/mh865/ASreml/"
 
 ###1. Input outCovComb4_dipOrder
-load(paste0("/local/workdir/mh865/outCovComb/outCovComb4_Mix_Conden_0527_2021.Rdata"))
+load(paste0(datafdr,"outCovComb4_Mix_Conden_0712_2021.Rdata"))
 
-All_grm<-outCovComb4_MixOrder  # 866
+All_grm<-outCovComb4_MixOrder  # 950
 
-Gencor_Yr<-function (data=dataNH,Trait_grm=Trait_grm3){
-  mod4<-asreml(Trait~Year+line+block+popChk,
-               random= ~ us(Year):vm(Crosses,Trait_grm3),
-               data = data, maxiter=100, trace=TRUE)
-  return(list(mod=mod4))
-}
 ###2. Input dataNH
 
 #### Plot level
-load(paste0(datafdr,"dataNHpi_withChk_3_sets_PhotoScore23_UpdateAsh_0309_2021.rdata"))  ## Plot -- Updated Ash
-load(paste0(datafdr,"dataNHim_withChk_3_sets_PhotoScore0123.rdata"))  ## Individual
+# load(paste0(datafdr,"dataNHpi_withChk_3_sets_PhotoScore23_UpdateAsh_0309_2021.rdata"))  ## Plot -- Updated Ash
+# load(paste0(datafdr,"dataNHim_withChk_3_sets_PhotoScore0123.rdata"))  ## Individual
 
-dataNHpi<-dataNHpiBoth_C  ##!!!!!
+load(paste0(datafdr,"dataNHpi_withChk_3Yrs_PhotoScore123_07152021.rdata"))  
+load(paste0(datafdr,"dataNHim_withChk_3Yrs_PhotoScore0123_07152021.rdata"))
 
-exptlSP <- as.character(dataNHpi$popChk) == "ES"
-dataNHpi$entry <- as.character(dataNHpi$popChk)
-dataNHpi$entry[exptlSP] <- as.character(dataNHpi$plotNo[exptlSP])
-dataNHpi$group <- as.factor(ifelse(exptlSP, 1, 0))
+dataNHpi<-dataNHpi3yrs_C  ##!!!!!
 
-for (col in c( "line", "block","popChk","group","entry","Year")){ 
-  dataNHpi[,col] <- factor(dataNHpi[,col])}
-dataNHpi<-droplevels(dataNHpi)
+####### These below are the data formatting procedure 
+dataNHpi$densityBlades<-ifelse(dataNHpi$densityBlades==0,NA,dataNHpi$densityBlades)  # densityblades as 0 then NA
+dataNHpi$popChk <- ifelse(substr(dataNHpi$plotNo, 1, 1) == "Z", substr(dataNHpi$plotNo, 1, 2), "ES")  # Checks VS ES
+
+dataNHpi$withinLoc <- ifelse(as.vector(dataNHpi$femaParLoc) == as.vector(dataNHpi$maleParLoc), 1, 0) # WithinLoc is 1
+dataNHpi$development[dataNHpi$development=="#N/A"] <-NA
+  str(dataNHpi)
+
+# Experimental design variables should be factors
+for (col in c( "Year", "plotNo","Region","femaPar", "femaParLoc", "malePar", "maleParLoc", "block", "line","popChk"))  #"GrowDays"
+  dataNHpi[,col] <- factor(dataNHpi[,col])
+  nlevels(dataNHpi$plotNo)
+  nlevels(dataNHpi$Year)
+  unique(dataNHpi$Year)
+# # Make data cols numeric. Re-Enforce data is numeric
+# for (col in c("wetWgtPlot", "lengthPlot", "wetWgtPerM","percDryWgt",  "dryWgtPerM","densityBlades")) #,"AshFreedryWgtPerM","AshFDwPM"
+#   dataNHpi[,col] <- as.numeric(dataNHpi[,col])
+
+# If percentDryWeigth is NA, then the plot WetWeightPerM and DryWeightperM should be set at NA, WetWeigthPerM may be just rope
+dataNHpi[is.na(dataNHpi$percDryWgt), c("dryWgtPerM")] <- NA
+keepRows <- !is.na(dataNHpi$percDryWgt)
+  sum(keepRows)  # 385
+
+fndrF1<-strsplit(as.character(dataNHpi$femaPar), split="-", fixed=T)
+fndrM1<-strsplit(as.character(dataNHpi$malePar),split="-",fixed=T)
+fndrF<-sapply(fndrF1, function(vec) paste(vec[1:3], collapse="-"))
+fndrM<-sapply(fndrM1, function(vec) paste(vec[1:3],collapse="-"))
+
+isSelf<-ifelse(fndrF==fndrM,1,0)
+dataNHpi$isSelf <- isSelf 
+  str(dataNHpi)
+
+# Experimental design variables should be factors
+#"GrowDays", "date",
+for (col in c("Year","plotNo","femaPar", "femaParLoc", "malePar", "maleParLoc", "line", "block",  "popChk", "withinLoc", "isSelf")) 
+  dataNHpi[,col] <- as.factor(dataNHpi[,col])
+
+####### These above are the data formatting procedure  
+
 
 ### Plot Level----Add blades!!!!
-traits<-c("wetWgtPerM","percDryWgt","dryWgtPerM","Ash","AshFDwPM","densityBlades") 
-dataNH<-dataNHpi   ### !!!!! Only the plot traits
+# traits<-c("wetWgtPerM","percDryWgt","dryWgtPerM","densityBlades") #"Ash","AshFDwPM",
+# for (col in traits){
+#   dataNHpi[,col]<-as.numeric(dataNHpi[,col])
+# }
+
+dataNH0<-dataNHpi   ### !!!!! Only the plot traits
 
 
 #### Individual level to get their experimental factors.
 #### The dataNHpi is already filtered for their phenotypic PHOTO SCORE (>2)
-dataNHim<-dataNHimboth_C
+dataNHim<-dataNHim3yrs_C
 dataNHim$line<-expss::vlookup(dataNHim$plotNo,dict=dataNHpi,lookup_column = "plotNo",result_column = "line")
 dataNHim$block<-expss::vlookup(dataNHim$plotNo,dict=dataNHpi,lookup_column = "plotNo",result_column = "block")
 dataNHim$Year<-expss::vlookup(dataNHim$plotNo,dict=dataNHpi,lookup_column = "plotNo",result_column = "Year")
@@ -54,16 +87,23 @@ dataNHim$PhotoScore<-expss::vlookup(dataNHim$plotNo,dict=dataNHpi,lookup_column 
 dataNHim<-dataNHim[which(dataNHim$PhotoScore >1),]  # 3969 rows with PhotoScore >1
   str(dataNHim)
   dim(dataNHim)
-
-traits<-c("bladeLength","bladeMaxWidth","bladeThickness","stipeLength","stipeDiameter")
-for (col in traits){
-  dataNHim[,col]<-as.numeric(dataNHim[,col]) }
-
+# 
+# traits<-c("bladeLength","bladeMaxWidth","bladeThickness","stipeLength","stipeDiameter")
+# for (col in traits){
+#   dataNHim[,col]<-as.numeric(dataNHim[,col]) }
 
 #######
-
 ####### Averaging the individual measurements to a plot level
 library(dplyr)
+
+trait<-c("bladeLength","bladeMaxWidth","bladeThickness","stipeLength","stipeDiameter")  
+   for (i in 1:length(trait)){
+    dataNHim$Trait<-dataNHim[,trait[i]]
+    EachTrait<-aggregate(Trait ~ Year+line+block+Crosses, data=dataNHim, FUN=mean, na.action = na.omit)
+    colnames(EachTrait)[colnames(EachTrait)=="Trait"]<-trait[i]
+    dataNHim_avg<-cbind(dataNHim_avg,EachTrait)
+   }
+
 dataNHim_avg<-aggregate(cbind(bladeLength,bladeMaxWidth,bladeThickness,stipeLength,stipeDiameter) ~ Year+line+block+Crosses, data=dataNHim, FUN=mean, na.action = na.omit)
 ### Plot and individual traits
 dataNHpi$MergeVar<-paste(dataNHpi$Year,dataNHpi$line,dataNHpi$block,dataNHpi$Crosses,sep="_")
@@ -85,7 +125,7 @@ colnames(dataNH1)[colnames(dataNH1)=="Crosses.x"]<-"Crosses"
 #### Between Year Genetic cor for all traits
 
 #### Only the individual traits
-dataNH<-dataNHim   ### !!!!!  OR dataNH<-dataNHpi ----> In 5.2 script RUN
+dataNH0<-dataNHim   ### !!!!!  OR dataNH<-dataNHpi ----> In 5.2 script RUN
  
   ### !!!!! Change the corresponding traits for each data set too!!!!
 #R
@@ -93,14 +133,32 @@ library(asreml)
 asreml.license.activate()
 #enter this code CDEA-HECC-CDAH-FIED
 
+
+### Yr19, 21
+# dataNH<-droplevels(dataNH0[dataNH0$Year%in%c(2019,2021),])
+# scheme<-"Yr19_Yr21"
+
+# dataNH<-droplevels(dataNH0[dataNH0$Year%in%c(2019,2020),])
+# scheme<-"Yr19_Yr20"
+
+ dataNH<-droplevels(dataNH0[dataNH0$Year%in%c(2020,2021),])
+ scheme<-"Yr20_Yr21"
+
+
+### Checks in the bottom
+dataNH_RMchk<-dataNH[!dataNH$crossID=="Check",]
+dataNH_chks<-dataNH[dataNH$crossID=="Check",]
+dataNH<-rbind(dataNH_RMchk,dataNH_chks)  
+
+
 modSum<-NULL
 cor<-NULL
 for (j in 1:length(traits)){
 
-dataNH$Trait<-dataNH[,traits[j]]
+dataNH$Trait<-as.numeric(dataNH[,traits[j]])
 dataNH<-droplevels(dataNH[!is.na(dataNH$Trait),])
 
-if (traits[j]%in%c("dryWgtPerM","AshFDwPM")){
+if (traits[j]%in%c("dryWgtPerM")){ #,"AshFDwPM" this is for 2019 and 2020 only
   dataNH$Trait2<-ifelse(dataNH$Year==2019,dataNH$Trait*sqrt(10),dataNH$Trait)  # Yr1 phenotype * sqrt(10)
   dataNH$Trait<-dataNH$Trait2
 }
@@ -113,7 +171,7 @@ Trait_grm<-All_grm[rownames(All_grm)%in%Trait_Crosses,colnames(All_grm)%in%Trait
 
 ### Adding the checks into the Trait_grm, all 1s in diagonal,all 0s for others
 data<-dataNH    
-    data[data$popChk=="ES",]$Crosses
+    #data[data$popChk=="ES",]$Crosses
     droplevels(data[data$popChk=="ES",])$Crosses
     ChkCross<-unique(droplevels(data[!data$popChk=="ES",])$Crosses) # 33 plots of checks, 4 unique ones
     Col0<-matrix(0,nrow=nrow(Trait_grm),ncol=length(ChkCross))
@@ -127,6 +185,9 @@ data<-dataNH
     rownames(Row0_Chk1)<-ChkCross
     
 Trait_grm3<-rbind(Trait_grm2,Row0_Chk1)
+
+## Correct the order Trait_grm3 to match to Crosses
+Trait_grm3<-Trait_grm3[levels(data$Crosses),levels(data$Crosses)]
     
   print(nrow(Trait_grm3)==length(unique(droplevels(data$Crosses))))
 modSum[[j]]<-summary(Gencor_Yr(data=data,Trait_grm=Trait_grm3)$mod)$varcomp
@@ -135,34 +196,47 @@ modSum[[j]]<-summary(Gencor_Yr(data=data,Trait_grm=Trait_grm3)$mod)$varcomp
 cor<-c(cor,modSum[[j]][,"component"][2]/sqrt(modSum[[j]][,"component"][1]*modSum[[j]][,"component"][3]))
 
 }
+### Q1?????????? Trait_grm3 is 212x212 VS the data/dataNH is 247xntrait
+### Add PlotValue 1:nrow(data), Add the NAs to those plotValue
+for (year in c(2020,2021)){
+  data[data$Year==year,]$plotdummy<-1:nrow(data[data$Year==year,])
+}
+
+Gencor_Yr<-function (data=dataNH,Trait_grm=Trait_grm3){
+  mod4<-asreml(Trait~Year+line+block+popChk,
+               random= ~ us(Year):vm(Crosses,Trait_grm3),
+               residual= ~ idh(Year),
+               data = data, maxiter=100, trace=TRUE,na.action=na.method(x="include"))
+  return(list(mod=mod4))
+}
+#:id(units) #:id(plotdummy)
+### NOW Assumed error variance to be the same.
+### Adding diagnol error variance structure. Within Yr homogeneous/ Between hetero
 
 names(cor)<-traits
 
 ##!!!!!!!!!!!!!!!!!!!!!!!!
 #### !!! Between Yr, Same Trait Plot, Gen_cor  ### ----> In 5.2 script RUN
 Plotcor<-cor  
-write.csv(cor,"Genetic_Correlations_BetweenYears_PlotLevel_05272021.csv")
-save(modSum,file="Genetic_Correlations_BetweenYears_PlotLevel_moddelSummary_05272021.Rdata")
+write.csv(cor,paste0("Genetic_Correlations_BetweenYears_PlotLevel_",scheme,"_0712_2021.csv"))
+save(modSum,file=paste0("Genetic_Correlations_BetweenYears_PlotLevel_moddelSummary_",scheme,"_0712_2021.Rdata"))
 
 ##!!!!!!!!!!!!!!!!!!!!!!!!!
 #### !!! Between Yr, Same Trait Individual, Gen_cor
 Indicor<-cor
-write.csv(cor,"Genetic_Correlations_BetweenYears_IndivLevel_05272021.csv")
-save(modSum,file="Genetic_Correlations_BetweenYears_IndivLevel_modelSummary_05272021.Rdata")
+write.csv(cor,paste0("Genetic_Correlations_BetweenYears_IndivLevel_",scheme,"_0712_2021.csv"))
+save(modSum,file=paste0("Genetic_Correlations_BetweenYears_IndivLevel_modelSummary_",scheme,"0712_2021.Rdata"))
 
 Bothcor<-c(Plotcor,Indicor)
   Bothcor
-write.csv(Bothcor,"Genetic_Correlations_BetweenYears_Plot_Indiv_Level_05272021.csv")
-
+write.csv(Bothcor,paste0("Genetic_Correlations_BetweenYears_Plot_Indiv_Level_",scheme,"_0712_2021.csv"))
 
 
 #############
 #############
-
 
 ########### Multi-trait for plot-level +Individual level traits
 ################################## Adding the checks into Relationship matrix
- 
   ### Transform the traits value by multiply sqrt(10)
 dataNH<-dataNHpi
 # for (j in 1: length(traits)){

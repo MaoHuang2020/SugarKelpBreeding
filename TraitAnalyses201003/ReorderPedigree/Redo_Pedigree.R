@@ -221,78 +221,126 @@ SP_GP_Ped<-cbind(SP_GP_row,spRows[as.character(SPGPs$SPCross)],NA)
 Ped_in_Order<-rbind(fndPed,GPsPed,progPed,SP_GP_Ped)  
 write.csv(Ped_in_Order,"Ped_in_Order_866_Individuals_Fndr_New_Order_0116_2021.csv")
 
-### calculate the aMat (pedigree based relationship matrix)_ Diploid level
+
+
+############!!!!!!!!!!!!
+######!!!!!!!!!!! Adding additional SPs of 2021 into this pedigree
+WD<-"/Users/maohuang/Desktop/Kelp/Simulation_Study/SugarKelpBreeding/TraitAnalyses201003"
+datafdr<-paste0(WD,"/data/")
+outputfdr<-paste0(WD,"/2021PhenotypicAnalysis/")
+
+load(paste0(datafdr,"dataNHpi_withChk_3Yrs_PhotoScore23_07122021.rdata"))
+GPlist<-c(as.character(Yr21$femaPar),as.character(Yr21$malePar))
+  str(GPlist)
+GPlist<-unique(GPlist) # 98 unique ones
+
+### Load the A matrix
+Ped_in_Order<-read.csv(paste0(datafdr,"/Ped_in_Order_866_Individuals_Fndr_New_Order_0116_2021.csv"),row.names=1)
+  Pedi866<-Ped_in_Order
+All866<-rownames(Pedi866)
+NotIn866<-GPlist[!GPlist%in%All866] # 0; All the GPs are in the Pedi866
+
+SP2020<-droplevels(Yr21$Crosses[!Yr21$Crosses%in%rownames(Pedi866)]) ## The SPs not in 866 list
+
+### Find parents for SP2020 (field season 2020-2021)
+
+  head(Ped_in_Order)
+  tail(Ped_in_Order)
+colnames(Ped_in_Order)<-c("fndRow","F","M")  #the fndRow==row for each individual ID
+
+SP2020_row<-1:length(SP2020)+nrow(Ped_in_Order) # Row numbers of the new SPs
+names(SP2020_row)<-SP2020
+  ItsFG_in_866<-stringr::str_split_fixed(string=as.character(names(SP2020_row)), "x", 2)[,1]
+  ItsMG_in_866<-stringr::str_split_fixed(string=as.character(names(SP2020_row)), "x", 2)[,2]
   
-source("calcCCmatrixBiphasic.R")
-#biphasicPedNH<-read.csv("Ped_in_Order_866_Individuals_Fndr_New_Order_0116_2021.csv.csv",sep=",",header=TRUE,row.names=1)
-biphasicPedNH<-Ped_in_Order
-
-biphasicCCmat <- calcCCmatrixBiphasic(biphasicPedNH)  #### !!!!!!! Update into calcCCmatrixHaploid() ?????
-rownames(biphasicCCmat) <- colnames(biphasicCCmat) <- rownames(biphasicPedNH)
-aMat <- 2 * biphasicCCmat
-
-save(fndrsA,biphasicPedNH,aMat,file="fndrsA_biphasicPedNH_fnderOrdered.Rdata")
-
-
-####### Calculating the outCovComb
-rm(list=ls())
-load("fndrsA_biphasicPedNH_fnderOrdered.Rdata")  
-  # "fndrsA": fndrs A matrix
-  # "biphasicPedNH": pedigree, Newly ordered fndrs 0116_2021, GPs also already ordered by 0114_2021
-  # "aMat": A matrix estimated from biphasicPedNH
-load("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/SugarKelpBreeding_NoGitPush/GenotypicData_for_SugarKelpBreeding/GPsAmat_NA0.8_P1P2P3_09282020.Rdata")
-  # Load the GPs A matrix, estimated from A.mat()
-  # Further reduced the "SL18-LD-13-Mg-3"
-GPsA<-GPsA[!rownames(GPsA)=="SL18-LD-13-Mg-3",!colnames(GPsA)=="SL18-LD-13-Mg-3"]
-GPsA<-round(GPsA,digits=5)   ### 2.GPs A
-  diag(GPsA) <- diag(GPsA) + 1e-5
-  is.positive.definite(GPsA)  # GPsA2 calculated by hand (above)  # 278
-
-diag(aMat) <- diag(aMat) + 1e-5
-is.positive.definite(aMat)     ### 3. pedigree
-
-  identical(rownames(aMat),rownames(Ped_in_Order))
-  sum(rownames(fndrsA)%in%rownames(aMat))   # 58
+ID866<-Ped_in_Order[,1]  ## The list of 866 Individuals(ID) to look for rows
+  names(ID866)<-rownames(Ped_in_Order)
   
-  sum(rownames(fndrsA)==colnames(fndrsA))
-  sum(rownames(GPsA)==colnames(GPsA))  # 278
-  sum(rownames(aMat)==colnames(aMat))
-  sum(rownames(fndrsA)%in%rownames(aMat))
-  sum(rownames(GPsA)%in%rownames(aMat))  # 270  !///!! This became a problem
-write.csv(rownames(GPsA)[!rownames(GPsA)%in%rownames(aMat)],"GPsA_not_in_aMat.csv")
+SP2020_ped<-cbind(SP2020_row,ID866[ItsFG_in_866],ID866[ItsMG_in_866])
+  colnames(SP2020_ped)<-colnames(Ped_in_Order)
+Pedi950<-rbind(Ped_in_Order,SP2020_ped)
+  dim(Pedi950)
+  head(Pedi950)
+  tail(Pedi950)  
 
-GPsA<-GPsA[rownames(GPsA)%in%rownames(aMat),colnames(GPsA)%in%rownames(aMat)]  # 270 x 270
+write.csv(Pedi950,paste0(datafdr,"Ped_in_Order_950_Individuals_0712_2021.csv"))
+     
+### Go to Re_do_RelationshipMatrix_05272021.R
 
-save(fndrsA,GPsA,aMat,file="CovList_3_As_0116_2021.Rdata")
+# ### calculate the aMat (pedigree based relationship matrix)_ Diploid level
+# codefdr<-paste0(WD,"/Code_10032020/")
+# source(paste0(codefdr,"calcCCmatrixBiphasic.R"))
+# #biphasicPedNH<-read.csv("Ped_in_Order_866_Individuals_Fndr_New_Order_0116_2021.csv.csv",sep=",",header=TRUE,row.names=1)
+# biphasicPedNH<-Ped_in_Order
+# 
+# biphasicCCmat <- calcCCmatrixBiphasic(biphasicPedNH)  #### !!!!!!! Update into calcCCmatrixHaploid() ?????
+# rownames(biphasicCCmat) <- colnames(biphasicCCmat) <- rownames(biphasicPedNH)
+# aMat <- 2 * biphasicCCmat
+# 
+# save(fndrsA,biphasicPedNH,aMat,file=paste0(datafdr,"fndrsA_biphasicPedNH_fnderOrdered_07122021.Rdata"))
+# 
+# ####### Calculating the outCovComb
+# rm(list=ls())
+# WD<-"/Users/maohuang/Desktop/Kelp/Simulation_Study/SugarKelpBreeding/TraitAnalyses201003"
+# datafdr<-paste0(WD,"/data/")
+# 
+# load(paste0(datafdr,"fndrsA_biphasicPedNH_fnderOrdered_07122021.Rdata"))  
+#   # "fndrsA": fndrs A matrix
+#   # "biphasicPedNH": pedigree, Newly ordered fndrs 0116_2021, GPs also already ordered by 0114_2021
+#   # "aMat": A matrix estimated from biphasicPedNH
+# load("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/SugarKelpBreeding_NoGitPush/GenotypicData_for_SugarKelpBreeding/GPsAmat_NA0.8_P1P2P3_09282020.Rdata")
+#   # Load the GPs A matrix, estimated from A.mat()
+#   # Further reduced the "SL18-LD-13-Mg-3"
+# GPsA<-GPsA[!rownames(GPsA)=="SL18-LD-13-Mg-3",!colnames(GPsA)=="SL18-LD-13-Mg-3"]
+# GPsA<-round(GPsA,digits=5)   ### 2.GPs A
+#   diag(GPsA) <- diag(GPsA) + 1e-5
+#   is.positive.definite(GPsA)  # GPsA2 calculated by hand (above)  # 278
+# 
+# diag(aMat) <- diag(aMat) + 1e-5
+#   is.positive.definite(aMat)     ### 3. pedigree
+# 
+#   identical(rownames(aMat),rownames(biphasicPedNH)) # biphasicPedNH is the Ped_in_Order
+#   sum(rownames(fndrsA)%in%rownames(aMat))   # 58
+#   
+#   sum(rownames(fndrsA)==colnames(fndrsA))
+#   sum(rownames(GPsA)==colnames(GPsA))  # 278
+#   sum(rownames(aMat)==colnames(aMat))
+#   sum(rownames(fndrsA)%in%rownames(aMat))
+#   sum(rownames(GPsA)%in%rownames(aMat))  # 270  !///!! This became a problem
+# write.csv(rownames(GPsA)[!rownames(GPsA)%in%rownames(aMat)],"GPsA_not_in_aMat.csv")
+# 
+# GPsA<-GPsA[rownames(GPsA)%in%rownames(aMat),colnames(GPsA)%in%rownames(aMat)]  # 270 x 270
+# 
+# save(fndrsA,GPsA,aMat,file="CovList_3_As_0116_2021.Rdata")
 
-##{} Run this in terminal
-#This was where old files were calculated
-#setwd("/local/workdir/mh865/SNPCalling/Saccharina_latissima/bamAll/bam/mpileup/Filtering/CovComb")
-
-setwd("/local/workdir/mh865/outCovComb/")
-load("CovList_3_As_0116_2021.Rdata")
-
-library(CovCombR)
-
-### 1. NO initial, 3-list
-CovList<-NULL
-CovList[[1]]<-fndrsA ## fndrsA
-CovList[[2]]<-GPsA  ## Further RMed the "SL18-LD-13-Mg-3"
-CovList[[3]]<-aMat   
-
-### 4. amat initial, 3-list, add weight
-weights<-c(2,2,1)
-outCovComb4<-CovComb(CovList,nu=1500,w=weights,Kinit=aMat) 
-
-outCovComb4_dipOrder<-outCovComb4[match(rownames(aMat),rownames(outCovComb4)),match(colnames(aMat),colnames(outCovComb4))]
-  # Reorder the outCovComb4 to aMat individuals!!
-save(outCovComb4_dipOrder,file="outCovComb_dip_0116_2021.Rdata")
-write.csv(rownames(outCovComb4),"outCovComb4_from_ordered_pedi_rownames.csv")
-
-
-#### Calculating outCovComb on a haploid base, go to Step 1)haploid.R
-####
-####
+# ##{} Run this in terminal
+# #This was where old files were calculated
+# #setwd("/local/workdir/mh865/SNPCalling/Saccharina_latissima/bamAll/bam/mpileup/Filtering/CovComb")
+# 
+# setwd("/local/workdir/mh865/outCovComb/")
+# load("CovList_3_As_0116_2021.Rdata")
+# 
+# library(CovCombR)
+# 
+# ### 1. NO initial, 3-list
+# CovList<-NULL
+# CovList[[1]]<-fndrsA ## fndrsA
+# CovList[[2]]<-GPsA  ## Further RMed the "SL18-LD-13-Mg-3"
+# CovList[[3]]<-aMat   
+# 
+# ### 4. amat initial, 3-list, add weight
+# weights<-c(2,2,1)
+# outCovComb4<-CovComb(CovList,nu=1500,w=weights,Kinit=aMat) 
+# 
+# outCovComb4_dipOrder<-outCovComb4[match(rownames(aMat),rownames(outCovComb4)),match(colnames(aMat),colnames(outCovComb4))]
+#   # Reorder the outCovComb4 to aMat individuals!!
+# save(outCovComb4_dipOrder,file="outCovComb_dip_0116_2021.Rdata")
+# write.csv(rownames(outCovComb4),"outCovComb4_from_ordered_pedi_rownames.csv")
+# 
+# 
+# #### Calculating outCovComb on a haploid base, go to Step 1)haploid.R
+# ####
+# ####
 
 
 

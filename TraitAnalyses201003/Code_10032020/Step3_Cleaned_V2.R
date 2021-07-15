@@ -1,97 +1,83 @@
 ###### Both Years
 ###################################
 rm(list=ls())
+### The dataNHpi needs to have all the checks at the bottom in order to construct the Z matrix properly
 
-library(here)
-here()
-datafdr<-here("TraitAnalyses201003/data/")
-wd<-here("TraitAnalyses201003/UpdateAsh/") ## !!
-setwd(wd)
+WD<-"/Users/maohuang/Desktop/Kelp/Simulation_Study/SugarKelpBreeding/TraitAnalyses201003"
+
+datafdr<-paste0(WD,"/data/")
+setwd(WD)
   getwd()
   ls()
 
 library(rrBLUP)
-# 
-# load("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/dataNHpi_withChk_3_sets_PhotoScore23.rdata")   ## Plot
-# load("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/dataNHim_withChk_3_sets_PhotoScore0123.rdata")  ## Indi
-  
 
-  ####
-  #load(paste0("hMat_PedNH_CCmat_fndrMrkData_",yr,"_PhotoScore23.rdata"))
-  #load(paste0("hMat_PedNH_CCmat_fndrMrkData_Both_PhotoScore23_NoSGP.rdata"))
-  # biphasicPedNH<-read.csv(here("TraitAnalyses201003/ReorderPedigree","Ped_in_Order_866_Individuals_Fndr_New_Order_0116_2021.csv"),sep=",",header=TRUE,row.names=1)
-  # biphasicPedNH[1:4,]
-  # spRows <- which(apply(biphasicPedNH[,2:3], 1, function(vec) all(vec > 0)))    ### Progeny sps, col 2 and 3 are all values
-  # nSp <- length(spRows)
-  # nSp #245
-  # 
+load(paste0(datafdr,"dataNHpi_withChk_3Yrs_PhotoScore123_07152021.rdata"))  
+load(paste0(datafdr,"dataNHim_withChk_3Yrs_PhotoScore0123_07152021.rdata"))
   
-load(paste0(datafdr,"dataNHpi_withChk_3_sets_PhotoScore23_UpdateAsh_0309_2021.rdata"))
-load(paste0(datafdr,"dataNHim_withChk_3_sets_PhotoScore0123.rdata"))  
-
 ### !!!!!!!!!! Here needs to run 3 times, each for each scenario
 ### !!!!Both
-dataNHpi<-dataNHpiBoth_C  
-dataNHim<-dataNHimboth_C
-yr<-"Both"
+dataNHpi<-dataNHpi3yrs_C  
+dataNHim<-dataNHim3yrs_C
+yr<-"Three"
   ls()
-head(dataNHpiBoth_C)
+  str(dataNHpi)
+  str(dataNHim)
+bothYr<-TRUE
+
+### !!!!Yr19,Yr20
+dataNHpi<-droplevels(dataNHpi3yrs_C[dataNHpi3yrs_C$Year%in%c(2019,2020),]) 
+dataNHim<-droplevels(dataNHim3yrs_C[dataNHim3yrs_C$Year%in%c(2019,2020),])
+yr<-"Two"
+ls()
+str(dataNHpi)
+str(dataNHim)
 bothYr<-TRUE
 
 
 # ### !!!!2019
-dataNHpi<-dataNHpi19_C
-dataNHim<-dataNHim19_C
+dataNHpi<-Yr19
+dataNHim<-Yr19_Ind
 yr<-"2019"
 bothYr<-FALSE  # use the within year model, not both years' data model
 # 
 
 ### !!!!2020
-dataNHpi<-dataNHpi20_C
-dataNHim<-dataNHim20_C
+dataNHpi<-Yr20
+dataNHim<-Yr20_Ind
 yr<-"2020"
 bothYr<-FALSE
 
 
+### !!!! 2021
+dataNHpi<-droplevels(Yr21[!Yr21$PhotoScore==1,])
+dataNHim<-Yr21_Ind
+yr<-"2021"
+bothYr<-FALSE
+
+
+####### These below are the data formatting procedure 
 dataNHpi$densityBlades<-ifelse(dataNHpi$densityBlades==0,NA,dataNHpi$densityBlades)  # densityblades as 0 then NA
 dataNHpi$popChk <- ifelse(substr(dataNHpi$plotNo, 1, 1) == "Z", substr(dataNHpi$plotNo, 1, 2), "ES")  # Checks VS ES
 
 dataNHpi$withinLoc <- ifelse(as.vector(dataNHpi$femaParLoc) == as.vector(dataNHpi$maleParLoc), 1, 0) # WithinLoc is 1
 dataNHpi$development[dataNHpi$development=="#N/A"] <-NA
-
-
-# #### Update the Blade Density data, But the correlation between old and YL's new ones are 1
-# density<-read.csv(paste0(datafdr,"Allplotdata_03.08.2021_Density.csv"),sep=",",header=TRUE)
-# 
-# density<-density[,c("Plot.ID","Density..Blades.m.")]
-# density$crossID<-paste(str_split_fixed(density$Plot.ID,"-",3)[,1],str_split_fixed(density$Plot.ID,"-",3)[,2],paste0("S",str_split_fixed(density$Plot.ID,"-",3)[,3]),sep="-")
-# colnames(density)<-(c("PlotID","DensityUpdate","crossID"))
-# density$DensityOld<-expss::vlookup(density$crossID,dict=dataNHpi,result_column="densityBlades",lookup_column="crossID")
-# cor(density$DensityUpdate,density$DensityOld,use="complete") #1
-#   dim(density)
-#   head(density)
-#   tail(density)
-# dataNHpi$densityBladesUpdate<-expss::vlookup(dataNHpi$crossID,dict=density,lookup_column = "crossID",result_column = "DensityUpdate")  
-#   head(dataNHpi)
-# #Only update the 2019 season density blades
-# dataNHpi$densityBladesUpdate2<-ifelse(dataNHpi$Year=="2019"&dataNHpi$popChk=="ES",dataNHpi$densityBladesUpdate,dataNHpi$densityBlades)  
-
-
+  str(dataNHpi)
 
 # Experimental design variables should be factors
-for (col in c( "Year", "plotNo","Region","GrowDays","femaPar", "femaParLoc", "malePar", "maleParLoc", "block", "line","popChk")) 
+for (col in c( "Year", "plotNo","Region","femaPar", "femaParLoc", "malePar", "maleParLoc", "block", "line","popChk"))  #"GrowDays"
   dataNHpi[,col] <- factor(dataNHpi[,col])
   nlevels(dataNHpi$plotNo)
   nlevels(dataNHpi$Year)
   unique(dataNHpi$Year)
-# Make data cols numeric. Enforce data is numeric
-for (col in c("wetWgtPlot", "lengthPlot", "wetWgtPerM","percDryWgt",  "dryWgtPerM","densityBlades","AshFreedryWgtPerM","AshFDwPM")) 
-  dataNHpi[,col] <- as.numeric(dataNHpi[,col])
+# # Make data cols numeric. Re-Enforce data is numeric
+# for (col in c("wetWgtPlot", "lengthPlot", "wetWgtPerM","percDryWgt",  "dryWgtPerM","densityBlades")) #,"AshFreedryWgtPerM","AshFDwPM"
+#   dataNHpi[,col] <- as.numeric(dataNHpi[,col])
 
 # If percentDryWeigth is NA, then the plot WetWeightPerM and DryWeightperM should be set at NA, WetWeigthPerM may be just rope
-dataNHpi[is.na(dataNHpi$percDryWgt), c("wetWgtPerM", "dryWgtPerM")] <- NA
+dataNHpi[is.na(dataNHpi$percDryWgt), c("dryWgtPerM")] <- NA
 keepRows <- !is.na(dataNHpi$percDryWgt)
-  sum(keepRows)  # 281
+  sum(keepRows)  # 385
 
 fndrF1<-strsplit(as.character(dataNHpi$femaPar), split="-", fixed=T)
 fndrM1<-strsplit(as.character(dataNHpi$malePar),split="-",fixed=T)
@@ -103,37 +89,28 @@ dataNHpi$isSelf <- isSelf
   str(dataNHpi)
 
 # Experimental design variables should be factors
-for (col in c("Year","plotNo","GrowDays", "femaPar", "femaParLoc", "malePar", "maleParLoc", "line", "block", "date", "popChk", "withinLoc", "isSelf")) 
+  #"GrowDays", "date",
+for (col in c("Year","plotNo","femaPar", "femaParLoc", "malePar", "maleParLoc", "line", "block",  "popChk", "withinLoc", "isSelf")) 
   dataNHpi[,col] <- as.factor(dataNHpi[,col])
 
+####### These above are the data formatting procedure  
+  
+  
 ### aMat has fndr+GP+ all the plot SPs in it.
 ### sort 
 
 dataNHpi_RMchk<-dataNHpi[!dataNHpi$crossID=="Check",] # Subset without chk levels
 dataNHpi_RMchk$Crosses<-as.factor(as.character(dataNHpi_RMchk$Crosses)) # This RMed the check levels
-  dim(dataNHpi_RMchk)   # 250
-  str(dataNHpi_RMchk)
+  dim(dataNHpi_RMchk)   # 355
+  str(dataNHpi_RMchk)   ## Too many levels in Crosses, need to drop levels
 nrowplot<-nrow(dataNHpi_RMchk)
 nrowchk<-nrow(dataNHpi) - nrowplot
 
-##{{}}
-##{{}}
-#Dip
-# load(here("TraitAnalyses201003/data","outCovComb_dip_0116_2021.Rdata"))
-#   outCovComb<-outCovComb4_dipOrder
-# diphap<-"dip"
-##{}
+dataNHpi_RMchk<-droplevels(dataNHpi_RMchk)
 
-# # #Hap
-# load(here("TraitAnalyses201003/data","hMat_hap_0116_2021.Rdata"))
-# #load(here("TraitAnalyses201003/Making_haploid_CovComb","outCovComb4_hap_Conden_0116_2021.Rdata")) # this outCovComb4_Hapconden=hMat_hap
-# outCovComb<-hMat_hap
-# diphap<-"hap"
-# # {}
-# ## {}
-  
+##{{}}
 ## Mixed ploidy
-load(here("TraitAnalyses201003/data","outCovComb4_Mix_Conden_0527_2021.Rdata"))
+load(paste0(datafdr,"outCovComb4_Mix_Conden_0712_2021.Rdata")) #outCovComb4_Mix_Conden_0527_2021.Rdata
 outCovComb<-outCovComb4_MixOrder  
   dim(outCovComb)
   outCovComb[1:4,1:4]
@@ -141,6 +118,7 @@ diphap<-"MixedPloidy"
   
 phenoNamesFact<-factor(dataNHpi_RMchk$Crosses,levels=rownames(outCovComb))   #colnames are sorted alphabetically for the outCovComb 
 msZ0<-model.matrix(~-1 +phenoNamesFact,data=dataNHpi_RMchk)  
+  colnames(msZ0)<-stringr::str_split_fixed(colnames(msZ0),"phenoNamesFact",2)[,2]
 
 #### Does this matter??
 identical(colnames(outCovComb)[544:787],levels(dataNHpi_RMchk$Crosses)) ####this= FALSE !!!Ordering of crosses in levels dataNHPi differs from outCovComb1
@@ -152,7 +130,16 @@ chkSpMat<-matrix(0, nrowchk, nrow(outCovComb))
 msZ<-rbind(msZ0,chkSpMat)
   dim(msZ)   # 283 x 866   # 2019, 139 x 866  # 2020, 144x866
                   # chkSpMat rownames are empty???? IT IS OK, dataNHpi is ordered that the checks are in the bottom
- 
+
+### The way msZ is set up, Checks has to be in the bottom of the Y file !!!!!!!!!!!
+dataNHpi_chks<-dataNHpi[dataNHpi$crossID=="Check",]
+dataNHpi<-rbind(dataNHpi_RMchk,dataNHpi_chks)  
+  dataNHpi$crossID
+
+msZCross<-colnames(msZ)
+outCovCombCross<-rownames(outCovComb)
+  identical(msZCross,outCovCombCross)
+
 # Calculate heritability from the mixed.solve output
 heritability <- function(msOut){
   return(2*msOut$Vu / (2*msOut$Vu + msOut$Ve))
@@ -172,7 +159,7 @@ ErrVar<-function(msOut){
   # msZcolname<-str_replace(colnames(msZ),"phenoNamesFact","")
   # sum(msZcolname==rownames(hMat))  # !!! Must be 866
 
-write.csv(dataNHpi,paste0(datafdr,"dataNHpi_Last_Used_in_Model_",yr,"_04202021.csv"))
+write.csv(dataNHpi,paste0(datafdr,"dataNHpi_Last_Used_in_Model_",yr,"_0715_2021.csv"))
 
 ########### 6. use hMat as the relationship matrx
 #### If or not chks could be included, not for ash, if this is within year or between year analysis
@@ -205,10 +192,16 @@ if (UseChk==FALSE){
     msX <- model.matrix( ~ line%in%Year+block%in%Year+Year+popChk, data=dataNHpi)  ### !!!! has popChk for the traits
     msX <- msX[, apply(msX, 2, function(v) !all(v == 0))]
     
-  }else{
+  }else if (BothYear==FALSE){
     # Within Year !!!! 2019 2020
-    msX <- model.matrix( ~ line+block+popChk, data=dataNHpi)  
-    msX <- msX[, apply(msX, 2, function(v) !all(v == 0))]
+    if (yr%in%c(2019,202)){
+      msX <- model.matrix( ~ line+block+popChk, data=dataNHpi)  
+      msX <- msX[, apply(msX, 2, function(v) !all(v == 0))] 
+         }else if(yr%in%c(2021)){
+      msX <- model.matrix( ~ line+block, data=dataNHpi)  
+      msX <- msX[, apply(msX, 2, function(v) !all(v == 0))] 
+        }
+  
   }
   
   library(Matrix)
@@ -227,75 +220,81 @@ if (UseChk==FALSE){
 
 ### log transformed DwPM and WWpM
 
-msOutAshFDwPM<-RunHeritability(BothYear=bothYr,UseChk=FALSE,Trait=dataNHpi$AshFDwPM,dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
-msOutAshOnly<-RunHeritability(BothYear=bothYr,UseChk=FALSE,Trait=dataNHpi$Ash,dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
+#msOutAshFDwPM<-RunHeritability(BothYear=bothYr,UseChk=FALSE,Trait=dataNHpi$AshFDwPM,dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
+#msOutAshOnly<-RunHeritability(BothYear=bothYr,UseChk=FALSE,Trait=dataNHpi$Ash,dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
 
-msOutDWPMh <-RunHeritability(BothYear=bothYr,UseChk=TRUE,Trait=log(dataNHpi$dryWgtPerM+1),dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
+#previous DWpM was log(DWpM+1)
 
-msOutCN<-RunHeritability(BothYear=bothYr,UseChk=FALSE,Trait=dataNHpi$C_N_Combine,dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
+# if (yr==2021){
+#   msOutDWPMh <-RunHeritability(BothYear=bothYr,UseChk=TRUE,Trait=dataNHpi$dryWgtPerM,dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
+# } else if(yr%in%c(2019,2021)){
+#   msOutDWPMh <-RunHeritability(BothYear=bothYr,UseChk=TRUE,Trait=log(dataNHpi$dryWgtPerM+1),dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
+#   
+# }
+msOutDWPMh <-RunHeritability(BothYear=bothYr,UseChk=TRUE,Trait=dataNHpi$dryWgtPerM,dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
 
-Scott<-c(heritability(msOutAshFDwPM),heritability(msOutAshOnly),heritability(msOutDWPMh))
-names(Scott)<-c("AFDW/M","%Ash","DW/M")
-  Scott
+### For Scott, Ash, CN
+# #msOutCN<-RunHeritability(BothYear=bothYr,UseChk=FALSE,Trait=dataNHpi$C_N_Combine,dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
+# 
+# Scott<-c(heritability(msOutAshFDwPM),heritability(msOutAshOnly),heritability(msOutDWPMh))
+# names(Scott)<-c("AFDW/M","%Ash","DW/M")
+#   Scott
+# 
+#   ## Making the plot for Scott, 0309_2021
+# 
+# barplot(Scott,main="Trait heritability",cex.main=2,cex.names=2.0)
+#   
+# par(mar=par("mar")+c(4,0,0,0))
+# barplot(Scott, ylab="Heritability", las=2, cex.axis=1.0, cex.lab=1.3, cex.names=1.0)
 
-  ## Making the plot for Scott, 0309_2021
-
-barplot(Scott,main="Trait heritability",cex.main=2,cex.names=2.0)
-  
-par(mar=par("mar")+c(4,0,0,0))
-barplot(Scott, ylab="Heritability", las=2, cex.axis=1.0, cex.lab=1.3, cex.names=1.0)
-
-msOutAshFreeDW<-RunHeritability(BothYear=bothYr,UseChk=FALSE,Trait=dataNHpi$AshFreedryWgtPerM,dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
-msOutWWPh <- RunHeritability(BothYear=bothYr,UseChk=TRUE,Trait=log(dataNHpi$wetWgtPlot+1),dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
+#msOutAshFreeDW<-RunHeritability(BothYear=bothYr,UseChk=FALSE,Trait=dataNHpi$AshFreedryWgtPerM,dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
+msOutWWPh <- RunHeritability(BothYear=bothYr,UseChk=TRUE,Trait=dataNHpi$wetWgtPerM,dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
 msOutPDWh <- RunHeritability(BothYear=bothYr,UseChk=TRUE,Trait=dataNHpi$percDryWgt,dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
 
 
 msOutDBh <- RunHeritability(BothYear=bothYr,UseChk=TRUE,Trait=dataNHpi$densityBlades,dataNHpi=dataNHpi,hMat=outCovComb)$msOutTrait
 
+###Not wetWgtPlot, but compare wetWgtPerM
 
   heritability(msOutAshFreeDW) #both 0.561 #2019 #2020 0.7995067   # Dave cal
   heritability(msOutAshFDwPM) #both 0.461 #2019 #2020 0.5173875    # my cal
   heritability(msOutAshOnly)  #both 0.070 
   
-traitsnames<-c("AshFDwPM","AshOnly", "dryWgtPerM","C:N ratio","wetWgtPlot", "percDryWgt","plotDensity")  
-h2hMat <- c(heritability(msOutAshFDwPM),
-            heritability(msOutAshOnly),
+ ### NOT wetWgtPlot !!!!!!1  
+traitsnames<-c( "dryWgtPerM","wetWgtPerM", "percDryWgt","plotDensity")  #"AshFDwPM","AshOnly","C:N ratio",
+h2hMat <- c(
             heritability(msOutDWPMh),
-            heritability(msOutCN),
             heritability(msOutWWPh),
             heritability(msOutPDWh),
-            heritability(msOutDBh))
+            heritability(msOutDBh)) #heritability(msOutAshFDwPM),heritability(msOutAshOnly),heritability(msOutCN),
   options(scipen = 999) # turn off scientific
-Vus<-c(Vu(msOutAshFDwPM),
-       Vu(msOutAshOnly),
+Vus<-c(
        Vu(msOutDWPMh),
-       Vu(msOutCN),
+
        Vu(msOutWWPh),  
        Vu(msOutPDWh),
-       Vu(msOutDBh)) 
+       Vu(msOutDBh))  #Vu(msOutAshFDwPM), Vu(msOutAshOnly),       Vu(msOutCN),
 
-ErrVars<-c(ErrVar(msOutAshFDwPM),
-           ErrVar(msOutAshOnly),
-           ErrVar(msOutCN),
+ErrVars<-c(
            ErrVar(msOutDWPMh), 
            ErrVar(msOutWWPh),
            ErrVar(msOutPDWh),
-           ErrVar(msOutDBh))
+           ErrVar(msOutDBh)) #ErrVar(msOutAshFDwPM), ErrVar(msOutAshOnly),ErrVar(msOutCN),
 names(h2hMat) <-names(Vus)<-names(ErrVars)<-traitsnames
   Vus
   ErrVars
   round(h2hMat,3) 
   
 H2Table<-rbind(h2hMat,Vus,ErrVars)
-write.csv(H2Table,paste0(datafdr,"H2_Plot_Level_",yr,"years","_usingMatrix_",diphap,".csv"))
+write.csv(H2Table,paste0(datafdr,"H2_Plot_Level_",yr,"years","_usingMatrix_",diphap,"_0715_2021.csv"))
   
 
-allBLUPsPlot <- cbind(msOutAshFDwPM$u,msOutAshOnly$u,msOutDWPMh$u,msOutWWPh$u,  msOutPDWh$u,msOutDBh$u)
+allBLUPsPlot <- cbind(msOutDWPMh$u,msOutWWPh$u,  msOutPDWh$u,msOutDBh$u) #msOutAshFDwPM$u,msOutAshOnly$u
   dim(allBLUPsPlot)
-colnames(allBLUPsPlot) <- c("AshFDwPM","AshOnly","DWpM","WWP","PDW","BD")
+colnames(allBLUPsPlot) <- c("DWpM","WWpM","PDW","BD") #"AshFDwPM","AshOnly",
   head(allBLUPsPlot)
 #write.csv(allBLUPsPlot,paste0(wd,"allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_0309_2021_dip.csv"))  
-write.csv(allBLUPsPlot,paste0(datafdr,"allBLUPs_PlotsOnly_withSGP_866_AddfndrsMrkData_","0527_2021_",diphap,"_",yr,".csv"))  
+write.csv(allBLUPsPlot,paste0(datafdr,"allBLUPs_PlotsOnly_withSGP_950_AddfndrsMrkData_","0715_2021_",diphap,"_",yr,".csv"))  
 
 
 ############# Individual BLUPs
@@ -307,15 +306,19 @@ if (BothYear==TRUE){
   msX <- model.matrix( ~ line%in%Year+block%in%Year+Year+popChk, data=dataNHpi)  ### !!!! has popChk for the traits
   msX <- msX[, apply(msX, 2, function(v) !all(v == 0))]
   
-}else{
+}else if (BothYear==FALSE){
   # Within Year !!!! 2019 2020
-  msX <- model.matrix( ~ line+block+popChk, data=dataNHpi)  
-  msX <- msX[, apply(msX, 2, function(v) !all(v == 0))]
+    if (yr%in%c(2019,2020)){
+    msX <- model.matrix( ~ line+block+popChk, data=dataNHpi)  
+    msX <- msX[, apply(msX, 2, function(v) !all(v == 0))]
+    }else if (yr%in%c(2021)){
+    msX <- model.matrix( ~ line+block, data=dataNHpi)  
+    msX <- msX[, apply(msX, 2, function(v) !all(v == 0))]
+    }
 }
 
 hMat=outCovComb
 #############
-
 
 for (col in c( "Year", "plotNo")) 
   dataNHim[,col] <- factor(dataNHim[,col])
@@ -323,29 +326,33 @@ for (col in c( "Year", "plotNo"))
   tail(dataNHim)
   dim(dataNHim)
   tail(dataNHpi)
+  str(dataNHim)  ## !!!!!!!!Ensure all experimental factors are factors, response variables are numeric
+#   
+# for (col in c("bladeLength", "bladeMaxWidth", "bladeThickness", "stipeLength", "stipeDiameter"))  
+#   dataNHim[,col] <- as.numeric(as.character(dataNHim[,col]))  ##!!!!!!!!!!!!!!!!!!!!
 
-for (col in c("bladeLength", "bladeMaxWidth", "bladeThickness", "stipeLength", "stipeDiameter"))  
-  dataNHim[,col] <- as.numeric(dataNHim[,col])
-
-dataNHim2<-subset(dataNHim,dataNHim$plotNo%in%dataNHpi$plotNo) #!!!! Each plotNo is unique
+dataNHim2<-droplevels(subset(dataNHim,dataNHim$plotNo%in%dataNHpi$plotNo)) #!!!! Each plotNo is unique
   dim(dataNHim2)
   dim(dataNHim)
 dataNHim2$plotNo<-factor(dataNHim2$plotNo)
-  nlevels(dataNHim2$plotNo) 
-  nlevels(dataNHpi$plotNo)
-  nlevels(dataNHim$plotNo)
+  nlevels(dataNHim2$plotNo) #383
+  nlevels(dataNHpi$plotNo)  #388
+  nlevels(dataNHim$plotNo)  #542    
 
 levels(dataNHim2$plotNo) <- levels(dataNHpi$plotNo)
 dataNHim0<-dataNHim
-dataNHim<-dataNHim2
+dataNHim<-dataNHim2  # 385 levels, lacking 2019_120 2020_261 Z1-H     Z1-J     Z4-E compared to
 
 ### No Need to be  changed to Crosses, individual connects with plots
 msXim <- model.matrix( ~ -1 + plotNo, data=dataNHim)  # nrow=nrow(dataNHim), ncol=number of plotNo=nlevels(plotNo)
 
+colnames(msXim)<-stringr::str_split_fixed(colnames(msXim),"plotNo",2)[,2]
+  identical(colnames(msXim),levels(dataNHim$plotNo))
 #rownames(msXim)<-rownames(dataNHim)
   dim(msXim)
   dim(dataNHim)
-
+  identical(colnames(msXim),as.character(levels(dataNHim$plotNo)))
+  identical(as.character(levels(dataNHim$plotNo)),as.character(levels(dataNHpi$plotNo)))
 msZim <- emZsp <- msXim %*% msZ
 #msXim <- msXim %*% msXdb
 msXim<-msXim%*%msX
@@ -369,16 +376,19 @@ names(h2hMatim) <- c("bladeLength", "bladeMaxWidth",  "bladeThickness", "stipeLe
   names(h2hMat) 
 allh2h<-c(h2hMat,h2hMatim)
   allh2h
-write.csv(allh2h,paste0(datafdr,"H2_Individual_Level_",yr,"years_usingMatrix_",diphap,"_05272021.csv"))
+write.csv(allh2h,paste0(datafdr,"H2_Individual_Level_",yr,"years_usingMatrix_",diphap,"_0715_2021.csv"))
 
-allBLUPs_addIndiv <- cbind(msOutAshFDwPM$u,msOutAshOnly$u,msOutDWPMh$u,msOutWWPh$u,  msOutPDWh$u, msOutDBh$u, msOutBLh$u, msOutBMWh$u,  msOutBTh$u, msOutSLh$u, msOutSDh$u)
+allBLUPs_addIndiv <- cbind(msOutDWPMh$u,msOutWWPh$u,  msOutPDWh$u, msOutDBh$u, msOutBLh$u, msOutBMWh$u,  msOutBTh$u, msOutSLh$u, msOutSDh$u)
+#msOutAshFDwPM$u,msOutAshOnly$u,
   head(allBLUPs_addIndiv)
-colnames(allBLUPs_addIndiv) <- c("AshFDwPM","AshOnly","DWpM","WWP",  "PDW", "BDns", "BLen", "BMax",  "BThk", "SLen", "SDia")
-write.csv(allBLUPs_addIndiv,paste0(datafdr,"allBLUPs_Plots+Individuals_withSGP_866_AddfndrsMrkData_","0420_2021_",diphap,"_",yr,"_05272021.csv"))
+colnames(allBLUPs_addIndiv) <- c("DWpM","WWpM",  "PDW", "BDns", "BLen", "BMax",  "BThk", "SLen", "SDia")
+#"AshFDwPM","AshOnly",
+write.csv(allBLUPs_addIndiv,paste0(datafdr,"allBLUPs_Plots+Individuals_withSGP_950_AddfndrsMrkData_",diphap,"_",yr,"_0715_2021.csv"))
+
 
 Y<-dataNHpi
 library(ggplot2)
-plot<-ggplot(data=Y,aes(wetWgtPlot,Year))+
+plot<-ggplot(data=Y,aes(dryWgtPerM,Year))+
   geom_point(aes(color=as.factor(Year)))+ 
   geom_line(aes(group=as.factor(Crosses)))
 print(plot)
@@ -422,10 +432,12 @@ print(plot)
 library(here)
 here()
 datafdr<-here("TraitAnalyses201003/data/")
-wd<-here("TraitAnalyses201003/UpdateAsh/")
-yr<-"Both"
+#wd<-here("TraitAnalyses201003/UpdateAsh/")
+wd<-here("TraitAnalyses201003/")
+
+yr<-"Three"
 diphap<-"MixedPloidy"
-allBLUPs<-read.csv(paste0(datafdr,"allBLUPs_Plots+Individuals_withSGP_866_AddfndrsMrkData_","0420_2021_",diphap,"_",yr,".csv"),sep=",",header=TRUE,row.names=1)
+allBLUPs<-read.csv(paste0(datafdr,"allBLUPs_Plots+Individuals_withSGP_950_AddfndrsMrkData_",diphap,"_",yr,"_0715_2021.csv"),sep=",",header=TRUE,row.names=1)
   head(allBLUPs)
 #rownames(allBLUPs) is the same as that in u, and hMat
 
@@ -461,10 +473,11 @@ SP_allBLUPs<-SP_allBLUPs[order(-SP_allBLUPs$DWpM),]  ###### Trait !!!!!!
 nrow(GP_allBLUPs)+length(fndNames)+nrow(SP_allBLUPs)
 #517(=439 GPs_from_fndr+78 SProg_GPs) +104+ 245
 
-pdf(paste0("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/","CorrPlot_SPplots",yr,"_PhotoScore23_With_",diphap,"_0422.pdf"))
+pdf(paste0(datafdr,"CorrPlot_SPplots",yr,"_PhotoScore23_With_",diphap,"_0715_2021.pdf"))
 corrplot::corrplot.mixed(cor(SP_allBLUPs), diag="n", tl.cex=0.6, tl.col=1)
 dev.off()
 
+#corrplot::corrplot.mixed(cor(dataNHpi[,c("dryWgtPerM","wetWgtPerM","percDryWgt","densityBlades")]),na.rm=TRUE,diag="n", tl.cex=0.6, tl.col=1)
 
 traitname<-"DWpM" # !!!!!!!!!!
 # Different colors for fndr, GP, progeny SP crosses
@@ -478,13 +491,13 @@ OrderedBLUPs$colSPGP<-colSPGP
 OrderedBLUPs$Trait<-OrderedBLUPs[,traitname]  
 
 
-##### Need to add and find out which SPs is from 2019 or 2020
-OrderedBLUPs$Year<-expss::vlookup(OrderedBLUPS)
+##### Need to add and find out which SPs is from 2019 or 2020 ???????????/
+  #OrderedBLUPs$Year<-expss::vlookup(OrderedBLUPS)
 #### FIGURE 3 !!!!!!! Plot out each generation of BLUPs
-pdf(paste0("/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/data/",traitname,"vs Individual",yr,"_PhotoScore23_with_",diphap,"_0331_Figure3.pdf"))
+pdf(paste0(datafdr,traitname,"vs Individual",yr,"_PhotoScore23_with_",diphap,"_Figure3_0715_2021.pdf"))
 #plot(OrderedBLUPs[,colnames(OrderedBLUPs)%in%traitname], pch=16, col=colSPGP, xlab="Individual number", ylab=traitname) # !!The second col is DWpM
 
-ggplot(data=OrderedBLUPs,mapping=aes(x=1:866,y=Trait,color=colSPGP))+
+ggplot(data=OrderedBLUPs,mapping=aes(x=1:950,y=Trait,color=colSPGP))+
          geom_point()+
     scale_color_manual(name="Category",
                        values=c("Founder SPs"="black","Founder SPs without progeny"="grey","GPs from Founder"="dark green","Farm SPs"="dark red","GPs from Farm SPs"="red"))+
@@ -498,7 +511,9 @@ dev.off()
 
 
 
-write.csv(OrderedBLUPs,paste0("allBLUPsDF_Ordred_",yr,"_Plots_Indiv_With",diphap,".csv"))
+
+
+write.csv(OrderedBLUPs,paste0("allBLUPsDF_Ordred_",yr,"_Plots_Indiv_With",diphap,"_0712_2021.csv"))
 
 # rnPos <- rownames(allBLUPs)[intersect(which(nDesc == 0), which(allBLUPs[,colnames(allBLUPs)%in%traitname]>0))] #!! The second col is DWpM
 # rnNeg <- rownames(allBLUPs)[intersect(which(nDesc == 0), which(allBLUPs[,colnames(allBLUPs)%in%traitname]<0))] #!! The second col is DWpM
@@ -690,6 +705,25 @@ corMeans
 
 
 
+# #### Update the Blade Density data, But the correlation between old and YL's new ones are 1
+# density<-read.csv(paste0(datafdr,"Allplotdata_03.08.2021_Density.csv"),sep=",",header=TRUE)
+# 
+# density<-density[,c("Plot.ID","Density..Blades.m.")]
+# density$crossID<-paste(str_split_fixed(density$Plot.ID,"-",3)[,1],str_split_fixed(density$Plot.ID,"-",3)[,2],paste0("S",str_split_fixed(density$Plot.ID,"-",3)[,3]),sep="-")
+# colnames(density)<-(c("PlotID","DensityUpdate","crossID"))
+# density$DensityOld<-expss::vlookup(density$crossID,dict=dataNHpi,result_column="densityBlades",lookup_column="crossID")
+# cor(density$DensityUpdate,density$DensityOld,use="complete") #1
+#   dim(density)
+#   head(density)
+#   tail(density)
+# dataNHpi$densityBladesUpdate<-expss::vlookup(dataNHpi$crossID,dict=density,lookup_column = "crossID",result_column = "DensityUpdate")  
+#   head(dataNHpi)
+# #Only update the 2019 season density blades
+# dataNHpi$densityBladesUpdate2<-ifelse(dataNHpi$Year=="2019"&dataNHpi$popChk=="ES",dataNHpi$densityBladesUpdate,dataNHpi$densityBlades)  
+
+
+
+
 
 # Best sporophytes
 nTop<-20  ### Pick the top 20
@@ -724,3 +758,18 @@ write.csv(outCovSample2,"outCovSample_TODiego.csv")
 #### Datafile in the 2020_2019_Phenotypic_Data path
 # #load("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/CovComb/outCovComb4_and_Conden.Rdata")
 
+
+# 
+# load("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/dataNHpi_withChk_3_sets_PhotoScore23.rdata")   ## Plot
+# load("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/dataNHim_withChk_3_sets_PhotoScore0123.rdata")  ## Indi
+
+
+####
+#load(paste0("hMat_PedNH_CCmat_fndrMrkData_",yr,"_PhotoScore23.rdata"))
+#load(paste0("hMat_PedNH_CCmat_fndrMrkData_Both_PhotoScore23_NoSGP.rdata"))
+# biphasicPedNH<-read.csv(here("TraitAnalyses201003/ReorderPedigree","Ped_in_Order_866_Individuals_Fndr_New_Order_0116_2021.csv"),sep=",",header=TRUE,row.names=1)
+# biphasicPedNH[1:4,]
+# spRows <- which(apply(biphasicPedNH[,2:3], 1, function(vec) all(vec > 0)))    ### Progeny sps, col 2 and 3 are all values
+# nSp <- length(spRows)
+# nSp #245
+# 

@@ -1,13 +1,16 @@
 ### Re-make the relationship matrix
 #1. Pedigree CC matrix calculated at haploid level, condense using JL function
-#2. FndrA calculated at diploid level via a.mat()
+#2. FndrA calculated at diploid level via a.mat() multiply by 2
 #3. GPs A calculated using the haploid function
 rm(list=ls())
 #write.csv(Ped_in_Order,"Ped_in_Order_866_Individuals_Fndr_New_Order_0116_2021.csv") # This is the most updated Pedi-file
 
-datafdr<-"/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/data"
+WD<-"/Users/maohuang/Desktop/Kelp/Simulation_Study/SugarKelpBreeding/TraitAnalyses201003"
+datafdr<-paste0(WD,"/data/")
+outputfdr<-paste0(WD,"/2021PhenotypicAnalysis/")
+
 ### 1. Input fndrsA at diploid level files:
-load(paste0(datafdr,"/CovList_3_As_0116_2021.Rdata"))  #####!!!!! Now fndrs has 58 individuals
+load(paste0(datafdr,"CovList_3_As_0116_2021.Rdata"))  #####!!!!! Now fndrs has 58 individuals
 # To get the list of fndrs from diploid level: "fndrsA"
   dim(fndrsA)  # 58 x 58
 fndrsA_diploid<-rownames(fndrsA)  
@@ -16,7 +19,8 @@ fndrsA_diploid<-rownames(fndrsA)
 # To get the pedigree at diploid level": "biphasicPedNH"
 library(here)
 here()
-biphasicPedNH<-read.csv(here("TraitAnalyses201003/ReorderPedigree","Ped_in_Order_866_Individuals_Fndr_New_Order_0116_2021.csv"),sep=",",header=TRUE,row.names=1)
+#biphasicPedNH<-read.csv(here("TraitAnalyses201003/ReorderPedigree","Ped_in_Order_866_Individuals_Fndr_New_Order_0116_2021.csv"),sep=",",header=TRUE,row.names=1)
+biphasicPedNH<-read.csv(paste0(datafdr,"Ped_in_Order_950_Individuals_0712_2021.csv"),sep=",",header=TRUE,row.names=1)
 
 # To get the function calculating haploid level ccMatrix, also condensing
 source(here("TraitAnalyses201003/Making_haploid_CovComb","calcCCmatrixBiphasic.R")) 
@@ -47,16 +51,26 @@ dipTwoPointers<-HaploidCCcal$dipTwoPointers  ###!!! For condensing
 
 ### Condense it here: Matrix 2
 Pediconden<-condenseMixedPloidyRelMat(hccMat=biphasichapccMat,hapOnePointer =hapOnePointer,dipTwoPointers=dipTwoPointers)
-# 866 x 866
+# 950 x 950
 rownames(Pediconden)<-colnames(Pediconden)<-rownames(biphasicPedNH)
 
-### 3. 
-load(paste0(datafdr,"/Newly_saved_3_As_for_CovComb_0116_2021.Rdata"))
-GPsA<-GPsA  # 269 x 269
-
+source("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/is.square.matrix.R")
+source("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/is.positive.definite.R")
+source("/Users/maohuang/Desktop/Kelp/2020_2019_Phenotypic_Data/Phenotypic_Analysis/TraitAnalyses200820_Updated_AfterCrossList/withSGP/is.symmetric.matrix.R")
 diag(Pediconden) <- diag(Pediconden ) + 1e-5
-is.positive.definite(Pediconden)
-save(Pediconden,fndrsA,GPsA,file="Newly_saved_3_As_for_CovComb_0420_2021.Rdata")
+  is.positive.definite(Pediconden)
+
+Pediconden950<-Pediconden
+
+### 3. Used the old GPsA, used the fndrsA*2 corrected in 0527_2021
+load(paste0(datafdr,"Newly_saved_3_As_for_CovComb_0527_2021.Rdata")) ## This version already corrected fndrsA to fndrsA*2
+  GPsA<-GPsA  # 269 x 269
+  dim(GPsA) 
+  GPsA[1:4,1:5]
+  fndrsA[1:4,1:5]
+### !!!!!!!!!!! 950 Individuals  
+save(Pediconden950,fndrsA,GPsA,file=paste0(datafdr,"Newly_saved_3_As_for_CovComb_0712_2021.Rdata")) ### fndrsA from 0116_2021 version
+
 #### Note GPs data  # did not redo this part on 0116_2021
                     # did not redo this part on 0420_2021
 
@@ -168,22 +182,29 @@ save(hapOnePointer,dipTwoPointers,file="Pointers_from_biphasichapccMat_0116_2021
 
 ###{{Done in terminal}}
 
-#### 05_27_2021 Redo the fndrsA matrix, by multiplying to 2
+
+#### 05_27_2021 Redo the fndrsA matrix (01-16-2021 version), by multiplying to 2
+#### (0712_2021 Just Use this part's output with corrected fndrsA*2, but Updated Pediconden to 950 individuals (see above)
 rm(list=ls())
-datafdr<-"/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/data"
+
+WD<-"/Users/maohuang/Desktop/Kelp/Simulation_Study/SugarKelpBreeding/TraitAnalyses201003"
+datafdr<-paste0(WD,"/data/")
+
 load(paste0(datafdr,"/Newly_saved_3_As_for_CovComb_0420_2021.Rdata"))
-  ls()   # Pediconde, fndrsA, GPsA
+ ls()   # Pediconde, fndrsA, GPsA
   dim(fndrsA)
   dim(GPsA)
   dim(Pediconden)
 fndrsA<-fndrsA*2
-save(Pediconden,GPsA,fndrsA,file=paste0(datafdr,"/Newly_saved_3_As_for_CovComb_0527_2021.Rdata"))
+save(Pediconden,GPsA,fndrsA,file=paste0(datafdr,"/Newly_saved_3_As_for_CovComb_0520_2021.Rdata"))
 
 
 ##{{Done in terminal}}
 #cd /local/workdir/mh865/outCovComb
 library(CovCombR)
-load("Newly_saved_3_As_for_CovComb_0527_2021.Rdata")
+# load("Newly_saved_3_As_for_CovComb_0527_2021.Rdata")
+
+load("Newly_saved_3_As_for_CovComb_0712_2021.Rdata")
 
 ### The order of fndrsA is not the first 58 of Pediconden, OK?
 
@@ -191,13 +212,13 @@ CovList<-NULL
 CovList[[1]]<-fndrsA ## fndrsA
 
 CovList[[2]]<-GPsA  
-CovList[[3]]<- Pediconden  
+CovList[[3]]<- Pediconden950  
 
 weights<-c(2,2,1)
 
 
-outCovComb4<-CovComb(Klist=CovList,nu=2000,w=weights,Kinit=Pediconden) 
+outCovComb4<-CovComb(Klist=CovList,nu=2000,w=weights,Kinit=Pediconden950) 
 ####### HAS TO BE RE-ORDERED !!!
-outCovComb4_MixOrder<-outCovComb4[match(rownames(Pediconden),rownames(outCovComb4)),match(colnames(Pediconden),colnames(outCovComb4))]
+outCovComb4_MixOrder<-outCovComb4[match(rownames(Pediconden950),rownames(outCovComb4)),match(colnames(Pediconden950),colnames(outCovComb4))]
 
-save(outCovComb4_MixOrder,Pediconden,fndrsA,GPsA,file="outCovComb4_Mix_Conden_0527_2021.Rdata")
+save(outCovComb4_MixOrder,Pediconden950,fndrsA,GPsA,file="outCovComb4_Mix_Conden_0712_2021.Rdata")

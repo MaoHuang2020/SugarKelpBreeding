@@ -1,14 +1,23 @@
 ###############################################  
-#### Making BLUEs within Year and between Years
+#### Making dBLUPs within Year and between Years
 rm(list=ls())
 WD<-"/Users/maohuang/Desktop/Kelp/GCA_SCA/" # local
-datafdr<-"/Users/maohuang/Desktop/Kelp/SugarKelpBreeding/TraitAnalyses201003/data/"
+datafdr<-"/Users/maohuang/Desktop/Kelp/Simulation_Study/SugarKelpBreeding/TraitAnalyses201003/data/"
 
 # load(paste0(WD,"OneTime1920/data/","dataNHpi_withChk_3_sets_PhotoScore23.rdata"))   ## Plot-- OLD
-load(paste0(datafdr,"dataNHpi_withChk_3_sets_PhotoScore23_UpdateAsh_0309_2021.rdata"))  ## Plot -- Updated Ash
-load(paste0(datafdr,"dataNHim_withChk_3_sets_PhotoScore0123.rdata"))  ## Individual
+# load(paste0(datafdr,"dataNHpi_withChk_3_sets_PhotoScore23_UpdateAsh_0309_2021.rdata"))  ## Plot -- Updated Ash
+# load(paste0(datafdr,"dataNHim_withChk_3_sets_PhotoScore0123.rdata"))  ## Individual
 
-dataNHpi<-dataNHpiBoth_C  ##!!!!!
+load(paste0(datafdr,"dataNHpi_withChk_3Yrs_PhotoScore23_07122021.rdata"))  
+load(paste0(datafdr,"dataNHim_withChk_3Yrs_PhotoScore0123_07122021.rdata"))
+
+dataNHpi<-dataNHpi3yrs_C  ##!!!!!
+
+dataNHpi$densityBlades<-ifelse(dataNHpi$densityBlades==0,NA,dataNHpi$densityBlades)  # densityblades as 0 then NA
+dataNHpi$popChk <- ifelse(substr(dataNHpi$plotNo, 1, 1) == "Z", substr(dataNHpi$plotNo, 1, 2), "ES")  # Checks VS ES
+
+dataNHpi$withinLoc <- ifelse(as.vector(dataNHpi$femaParLoc) == as.vector(dataNHpi$maleParLoc), 1, 0) # WithinLoc is 1
+dataNHpi$development[dataNHpi$development=="#N/A"] <-NA
 
 exptlSP <- as.character(dataNHpi$popChk) == "ES"
 dataNHpi$entry <- as.character(dataNHpi$popChk)
@@ -17,11 +26,19 @@ dataNHpi$group <- as.factor(ifelse(exptlSP, 1, 0))
 
 for (col in c( "line", "block","popChk","group","entry","Year")){ 
   dataNHpi[,col] <- factor(dataNHpi[,col])}
+
+
+traits<-c("wetWgtPerM","percDryWgt","dryWgtPerM","densityBlades") #,"Ash","AshFDwPM",
+for (col in traits){
+  dataNHpi[,col]<-as.numeric(dataNHpi[,col])}
+
 dataNHpi<-droplevels(dataNHpi)
+
+dataNH<-dataNHpi   ### !!!!!
 
 #### Individual level to get their experimental factors.
 #### The dataNHpi is already filtered for their phenotypic PHOTO SCORE (>2)
-dataNHim<-dataNHimboth_C
+dataNHim<-dataNHim3yrs_C
 dataNHim$line<-expss::vlookup(dataNHim$plotNo,dict=dataNHpi,lookup_column = "plotNo",result_column = "line")
 dataNHim$block<-expss::vlookup(dataNHim$plotNo,dict=dataNHpi,lookup_column = "plotNo",result_column = "block")
 dataNHim$Year<-expss::vlookup(dataNHim$plotNo,dict=dataNHpi,lookup_column = "plotNo",result_column = "Year")
@@ -41,8 +58,6 @@ dataNH<-dataNHim   ### !!!!!
 #######
 #######
 
-traits<-c("wetWgtPerM","percDryWgt","dryWgtPerM","Ash","AshFDwPM","densityBlades") 
-dataNH<-dataNHpi   ### !!!!!
 
 #######
 library(sommer)
@@ -55,15 +70,19 @@ dataNH<-dataNH
 ### Within Year
   # 2020_273 is the same as 2020_219
   comX<-c("SL18-OI-15-FG1xSA18-CB-2-MG3","SL18-LD-13-FG2xSL18-LD-13-MG2","SL18-LD-2-FG2xSL18-SF-19-MG1","SL18-NL-2-FG3xSA18-CB-4-MG1","SL18-NL-3-FG1xSA18-CB-7-MG2")
+#
+Yr<-2021  ###!!!! 
+#
 Yr<-2020  ###!!!!
 #
 Yr<-2019  ###!!!!
+
 WithinYear=TRUE
 dataNH<-dataNH[dataNH$Year==Yr,]
 dataNH<-dataNH[order(dataNH$plotNo),]
 
-
   dim(dataNH)
+  head(dataNH)
 if (WithinYear==FALSE){
   ### Both Years
   NumCrosses<-length(unique(dataNH$Crosses))
@@ -119,38 +138,55 @@ for (j in 1:length(traits)){
     #   i=Year-2018
     #   data<-dataNH[dataNH$Year==Year,]
     data<-droplevels(data)
-    
-    tmp.mod <- mmer(fixed = Trait ~ popChk, 
-                    random = ~block + line + block:line+Crosses, 
-                    data = data)
-    
+   
+    ###2019, 2020 model
+    # tmp.mod <- mmer(fixed=Trait~ popChk, 
+    #                 random = ~block + line + block:line+Crosses, 
+    #                 data = data)
+    ###2021 model
+    tmp.mod <- mmer(Trait~1,
+                random = ~ line+block+line:block+Crosses,
+                data = data)
+
     PEV <- diag(tmp.mod$PevU$`Crosses`$Trait)
     varG <- as.numeric(tmp.mod$sigma$`Crosses`)
     tmp.BLUPs <- tmp.mod$U$`Crosses`$Trait  ##blups
     names(tmp.BLUPs)<-stringr::str_replace(names(tmp.BLUPs),"Crosses","")
     tmp.dBLUPs<-tmp.BLUPs / (1 - PEV/varG)  ##deregressed blups checks will have "inf" values
     print(identical(names(tmp.BLUPs),names(tmp.dBLUPs)))
-    CheckCrosses<-unique(droplevels(data[!data$popChk=="ES",]$Crosses))  ## 4 Crosses
-    CheckCrosses
-    tmp.BLUPs[names(tmp.BLUPs)%in%CheckCrosses]<-NA
-    tmp.dBLUPs[names(tmp.dBLUPs)%in%CheckCrosses]<-NA
     
+    ### 2021 No need
+    # CheckCrosses<-unique(droplevels(data[!data$popChk=="ES",]$Crosses))  ## 4 Crosses
+    # CheckCrosses
+    # tmp.BLUPs[names(tmp.BLUPs)%in%CheckCrosses]<-NA
+    # tmp.dBLUPs[names(tmp.dBLUPs)%in%CheckCrosses]<-NA
+    # 
     
     BLUPs[,j] <- tmp.BLUPs  
     dBLUPs[,j] <- tmp.dBLUPs  
     
-    #H2 <- rbind(H2, pin(tmp.mod, h2 ~ V2 / ( V2 + V4)))
-    H2<-rbind(H2,h2.fun(tmp.mod,data=data,gTerm="Crosses"))
+    ### 2021 No need
+    # #H2 <- rbind(H2, pin(tmp.mod, h2 ~ V2 / ( V2 + V4)))
+    # H2<-rbind(H2,h2.fun(tmp.mod,data=data,gTerm="Crosses"))
     convInfo[j] <- tmp.mod$convergence
   }
   
 }
+
+########## Trouble shooting??  
+### 2021 data for percDryWgt has no line effects. BLUPs are 0??????????
+  Coltrait<-traits[j]
+  dataNH$Trait<-dataNH[,Coltrait]  ### !!!!! TraitBLUE
+  data<-dataNH
+  data<-droplevels(data)
+  fit2021<- lme4::lmer(Trait ~ line*block + (1|Crosses), data=data)
 ################################
 
 rownames(H2)<-traits
   H2
   convInfo
 save(H2,convInfo,file=paste0(datafdr,Yr,"_Indiv_sommer_h2.fuc_convergence.Rdata")) #/Plots_
+
 
 colnames(BLUPs)<-colnames(dBLUPs)<-traits
 rownames(BLUPs)<-rownames(dBLUPs)<-names(tmp.dBLUPs)
@@ -159,15 +195,39 @@ rownames(BLUPs)<-rownames(dBLUPs)<-names(tmp.dBLUPs)
   dim(BLUPs)
   dim(dBLUPs)
 
-BLUPs<-BLUPs[!rownames(BLUPs)%in%CheckCrosses,]     #RM the checks crosses
-dBLUPs<-dBLUPs[!rownames(dBLUPs)%in%CheckCrosses,]    
+#### No need this one for Yr2021
+# BLUPs<-BLUPs[!rownames(BLUPs)%in%CheckCrosses,]     #RM the checks crosses
+# dBLUPs<-dBLUPs[!rownames(dBLUPs)%in%CheckCrosses,]    
 
+####Yr2021
+Yr21_dBLUPs<-as.data.frame(dBLUPs)  ##!!!!
+Yr21_dBLUPs$Year<-Yr
+  dim(Yr21_dBLUPs)
+  head(Yr21_dBLUPs)
+  
+dataNHpi$Crosses<-as.character(dataNHpi$Crosses) 
+dataNHpi$Year<-as.numeric(dataNHpi$Year)
+
+Yr21_dBLUPs$plotNo<-expss::vlookup(rownames(Yr21_dBLUPs),dict=dataNH,lookup_column = "Crosses",result_column = "plotNo")
+Yr21_dBLUPs$Crosses<-rownames(Yr21_dBLUPs)
+rownames(Yr21_dBLUPs)<-Yr21_dBLUPs$plotNo
+  head(Yr21_dBLUPs)
+save(Yr21_dBLUPs,file=paste0(datafdr,"Deregressed_BLUPs_ESplots_plotlevel_WithinYr2021_0721_2021.Rdata"))
+save(Yr21_dBLUPs,file=paste0(datafdr,"Deregressed_BLUPs_ESplots_Indivlevel_WithinYr2021_0721_2021.Rdata"))
+
+  load(paste0(datafdr,"Deregressed_BLUPs_ESplots_plotlevel_WithinYr2021_0721_2021.Rdata"))
+WithinYr_Plot_dBLUPs<-Yr21_dBLUPs
+  load(paste0(datafdr,"Deregressed_BLUPs_ESplots_Indivlevel_WithinYr2021_0721_2021.Rdata"))
+WithinYr_Indi_dBLUPs<-Yr21_dBLUPs
+WithinYr21_dBLUPs<-merge(WithinYr_Plot_dBLUPs,WithinYr_Indi_dBLUPs,by.x="row.names",by.y="row.names",all.x=TRUE)
+  head(WithinYr21_dBLUPs)
+save(WithinYr21_dBLUPs,file=paste0(datafdr,"Deregressed_BLUPs_ESplots_plot_n_Indiv_WithinYr2021_0721_2021.Rdata"))
 
 ####
 Yr19_dBLUPs<-as.data.frame(dBLUPs)  ##!!!!
 Yr19_dBLUPs$Year<-Yr
   dim(Yr19_dBLUPs)
-Yr19_dBLUPs$plotNo<-expss::vlookup(rownames(Yr19_dBLUPs),dict=dataNH[dataNHpi$Year==Yr,],lookup_column = "Crosses",result_column = "plotNo")
+Yr19_dBLUPs$plotNo<-expss::vlookup(rownames(Yr19_dBLUPs),dict=dataNHpi[dataNHpi$Year==Yr,],lookup_column = "Crosses",result_column = "plotNo")
 Yr19_dBLUPs$Crosses<-rownames(Yr19_dBLUPs)
 rownames(Yr19_dBLUPs)<-Yr19_dBLUPs$plotNo
   Yr19_dBLUPs[Yr19_dBLUPs$Crosses=="SL18-LD-13-FG2xSL18-LD-13-MG2",]
